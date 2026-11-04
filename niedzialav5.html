@@ -1,0 +1,2282 @@
+<!DOCTYPE html>
+<html lang="pl" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>QuizArena ⚡ - Wieloosobowy Quiz z Powerami</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Fredoka', 'sans-serif'],
+          },
+          colors: {
+            kahoot: {
+              red: '#e21b3c',
+              redDark: '#b0102b',
+              blue: '#1368ce',
+              blueDark: '#0d4a96',
+              yellow: '#d89e00',
+              yellowDark: '#a37600',
+              green: '#26890c',
+              greenDark: '#1b6308',
+              purple: '#46178f',
+              purpleDark: '#250856'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background: radial-gradient(circle at 50% 0%, #3b1078 0%, #190736 55%, #0c031c 100%);
+      min-height: 100vh;
+      color: #ffffff;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    /* Animated background grid pattern */
+    .bg-grid-pattern {
+      background-image: 
+        linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* 3D Arcade Button Press Effects */
+    .btn-3d-purple {
+      background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%);
+      box-shadow: 0 6px 0 #4c1d95, 0 10px 20px rgba(0,0,0,0.4);
+      transition: all 0.12s ease;
+    }
+    .btn-3d-purple:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 0 #4c1d95, 0 14px 24px rgba(139,92,246,0.4);
+    }
+    .btn-3d-purple:active:not(:disabled) {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #4c1d95;
+    }
+
+    .btn-3d-amber {
+      background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+      box-shadow: 0 6px 0 #92400e, 0 10px 20px rgba(0,0,0,0.4);
+      transition: all 0.12s ease;
+    }
+    .btn-3d-amber:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 0 #92400e, 0 14px 24px rgba(251,191,36,0.4);
+    }
+    .btn-3d-amber:active:not(:disabled) {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #92400e;
+    }
+
+    /* Kahoot Answer Cards */
+    .ans-red {
+      background: linear-gradient(180deg, #f42548 0%, #d41435 100%);
+      box-shadow: 0 7px 0 #960b23, 0 10px 18px rgba(0,0,0,0.35);
+    }
+    .ans-blue {
+      background: linear-gradient(180deg, #1d7bf0 0%, #115cb8 100%);
+      box-shadow: 0 7px 0 #0a3c7a, 0 10px 18px rgba(0,0,0,0.35);
+    }
+    .ans-yellow {
+      background: linear-gradient(180deg, #f5b301 0%, #d19600 100%);
+      box-shadow: 0 7px 0 #8f6600, 0 10px 18px rgba(0,0,0,0.35);
+    }
+    .ans-green {
+      background: linear-gradient(180deg, #2ea310 0%, #227d0b 100%);
+      box-shadow: 0 7px 0 #144d05, 0 10px 18px rgba(0,0,0,0.35);
+    }
+    .ans-card {
+      transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.15s ease, opacity 0.2s ease;
+    }
+    .ans-card:hover:not(:disabled) {
+      transform: translateY(-3px) scale(1.01);
+      filter: brightness(1.08);
+    }
+    .ans-card:active:not(:disabled) {
+      transform: translateY(5px);
+    }
+
+    /* Screen Shake when attacked by a Power-Up */
+    @keyframes shakeHit {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      15% { transform: translate(-12px, -8px) rotate(-2deg); }
+      30% { transform: translate(12px, 6px) rotate(2deg); }
+      45% { transform: translate(-10px, 8px) rotate(-1.5deg); }
+      60% { transform: translate(10px, -6px) rotate(1.5deg); }
+      75% { transform: translate(-6px, 4px) rotate(-0.5deg); }
+    }
+    .animate-hit-shake {
+      animation: shakeHit 0.55s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    /* Glowing Power Button pulse */
+    @keyframes pulsePower {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7), 0 0 25px rgba(234, 179, 8, 0.8); transform: scale(1); }
+      50% { box-shadow: 0 0 0 12px rgba(250, 204, 21, 0), 0 0 40px rgba(250, 204, 21, 1); transform: scale(1.04); }
+    }
+    .power-ready-glow {
+      animation: pulsePower 1.5s infinite;
+    }
+
+    /* Flame pulse */
+    @keyframes flameBounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-3px) scale(1.14); }
+    }
+    .flame-active {
+      animation: flameBounce 1s ease-in-out infinite;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 7, 34, 0.6); }
+    ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.5); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.8); }
+
+    /* ===== CZARNY MOTYW (fioletowe akcenty zostają) ===== */
+    body { background: #09090b !important; color: #f4f4f5; }
+    .bg-grid-pattern { background-image: linear-gradient(rgba(139,92,246,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,.05) 1px, transparent 1px) !important; }
+    [class*="bg-purple-9"], [class*="from-purple-9"], [class*="to-purple-9"], [class*="from-indigo-9"], [class*="to-indigo-9"], [class*="from-fuchsia-9"] {
+      background-image: none !important; background-color: #14141b !important; }
+    [class*="border-purple-4"], [class*="border-purple-5"] { border-color: #3b3558 !important; }
+    [class*="bg-black/3"], [class*="bg-black/4"], [class*="bg-black/5"], [class*="bg-black/6"] { background-color: #0f0f14 !important; }
+    .text-purple-100 { color: #f4f4f5 !important; }
+    .text-purple-200, [class*="text-purple-200/"] { color: #d4d4d8 !important; }
+    .text-purple-300 { color: #a1a1aa !important; }
+    input, select, textarea { color: #fff; }
+    input::placeholder, textarea::placeholder { color: #71717a; }
+    header { background: rgba(9,9,11,.85) !important; border-color: #27272f !important; }
+  </style>
+</head>
+
+<body class="bg-grid-pattern flex flex-col min-h-screen selection:bg-fuchsia-500 selection:text-white">
+
+  <!-- RED FLASH OVERLAY WHEN HIT BY ENEMY POWER-UP -->
+  <div id="hitFlashOverlay" class="fixed inset-0 pointer-events-none z-50 opacity-0 transition-opacity duration-300 bg-red-600/45 backdrop-blur-[2px] flex items-center justify-center">
+    <div id="hitOverlayBanner" class="bg-red-950/95 border-4 border-red-400 rounded-3xl px-8 py-6 text-center shadow-2xl transform scale-90 transition-transform duration-300">
+      <div class="text-6xl mb-2" id="hitOverlayIcon">💥</div>
+      <h2 class="font-display text-3xl md:text-4xl font-bold text-red-200 tracking-wide uppercase" id="hitOverlayTitle">ZOSTAŁEŚ TRAFIONY POWEREM!</h2>
+      <p class="text-lg md:text-xl text-white font-semibold mt-2" id="hitOverlayDesc"></p>
+    </div>
+  </div>
+
+  <!-- CONFETTI CANVAS FOR PODIUM -->
+  <canvas id="confettiCanvas" class="fixed inset-0 pointer-events-none z-40 hidden"></canvas>
+
+  <!-- TOP NAVIGATION / STATUS BAR -->
+  <header class="w-full border-b border-white/10 bg-black/30 backdrop-blur-md sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3 cursor-pointer" id="brandLogoBtn" title="Powrót do ekranu głównego">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-fuchsia-500 via-purple-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-fuchsia-500/30 border border-white/20">
+          <i class="fa-solid fa-bolt text-amber-300 text-xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-display text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-fuchsia-200 to-amber-300 bg-clip-text text-transparent">QuizArena</span>
+            <span class="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">Powery 5x 🔥</span>
+          </div>
+          <p class="text-xs text-purple-200/70 hidden sm:block">Wieloosobowy Quiz na Żywo • Rywalizacja & Sabotaż</p>
+        </div>
+      </div>
+
+      <!-- Right Controls: Room Badge, Audio, Editor/GitHub Export -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Active Room PIN Pill -->
+        <div id="headerRoomBadge" class="hidden items-center gap-2 bg-purple-950/90 border border-purple-400/40 px-3.5 py-1.5 rounded-xl">
+          <span class="text-xs text-purple-300 uppercase font-semibold">PIN:</span>
+          <span id="headerPinValue" class="font-display font-bold text-amber-300 text-lg tracking-widest">------</span>
+          <button id="headerCopyPinBtn" class="text-purple-300 hover:text-white text-xs ml-1" title="Kopiuj PIN">
+            <i class="fa-regular fa-copy"></i>
+          </button>
+        </div>
+
+        <!-- Sound Toggle -->
+        <button id="soundToggleBtn" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 flex items-center justify-center text-amber-300 transition" title="Włącz/Wyłącz dźwięki">
+          <i class="fa-solid fa-volume-high" id="soundIcon"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- LIVE COMBAT FEED / TOAST NOTIFICATIONS -->
+  <div id="combatToastContainer" class="fixed top-20 left-1/2 -translate-x-1/2 z-40 w-full max-w-lg px-4 pointer-events-none flex flex-col gap-2"></div>
+
+  <!-- MAIN APPLICATION CONTAINER -->
+  <main id="mainAppContainer" class="flex-1 flex flex-col justify-center items-center w-full max-w-6xl mx-auto px-4 py-6">
+
+    <!-- ==========================================
+         VIEW 1: HOME SCREEN (CREATE OR JOIN GAME)
+         ========================================== -->
+    <section id="viewHome" class="w-full max-w-4xl mx-auto">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-200 text-xs sm:text-sm font-semibold mb-4">
+          <i class="fa-solid fa-fire text-amber-400"></i>
+          <span>Zdobądź passę 5 poprawnych odpowiedzi i zaatakuj rywali Powerem!</span>
+        </div>
+        <h1 class="font-display text-4xl sm:text-6xl font-bold tracking-tight text-white drop-shadow-lg">
+          Walcz na wiedzę i <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-orange-400 to-rose-400">Powery!</span>
+        </h1>
+        <p class="text-purple-200/80 mt-3 text-sm sm:text-base max-w-2xl mx-auto">
+          Dołącz z telefonu, tabletu lub komputera za pomocą kodu PIN. Odpowiadaj szybko, buduj serię 5 trafień z rzędu i odbieraj punkty przeciwnikom!
+        </p>
+      </div>
+
+      <!-- Player Profile Card (Nick & Avatar) -->
+      <div class="bg-purple-950/60 backdrop-blur-xl border border-white/15 rounded-3xl p-5 sm:p-7 shadow-2xl mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+          <!-- Nickname Input -->
+          <div class="md:col-span-6">
+            <label class="block text-xs font-bold uppercase tracking-wider text-purple-300 mb-2">
+              <i class="fa-solid fa-user-astronaut mr-1 text-amber-300"></i> Twój Pseudonim w Grze
+            </label>
+            <input 
+              id="playerNameInput" 
+              type="text" 
+              maxlength="16" 
+              placeholder="Wpisz swój nick (np. Mistrz, Ania)..." 
+              class="w-full px-4 py-3.5 rounded-2xl bg-black/40 border-2 border-purple-500/40 focus:border-amber-400 focus:outline-none text-white font-bold text-lg placeholder-purple-300/40 transition"
+            />
+          </div>
+
+          <!-- Avatar Picker -->
+          <div class="md:col-span-6">
+            <label class="block text-xs font-bold uppercase tracking-wider text-purple-300 mb-2">
+              <i class="fa-solid fa-masks-theater mr-1 text-amber-300"></i> Wybierz Awatar Bojowy
+            </label>
+            <div id="avatarPickerGrid" class="grid grid-cols-8 gap-1.5 sm:gap-2">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Join Game vs Create Room Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- JOIN EXISTING ROOM BY PIN -->
+        <div class="bg-gradient-to-b from-indigo-950/80 to-purple-950/80 backdrop-blur-xl border-2 border-indigo-400/30 rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-2xl">
+          <div>
+            <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 border border-indigo-400/40 flex items-center justify-center text-indigo-300 text-2xl mb-4">
+              <i class="fa-solid fa-gamepad"></i>
+            </div>
+            <h2 class="font-display text-2xl sm:text-3xl font-bold text-white">Dołącz do Gry</h2>
+            <p class="text-purple-200/75 text-sm mt-1 mb-5">
+              Masz kod PIN od prowadzącego lub znajomego? Wpisz go poniżej, aby wejść do wspólnego pokoju.
+            </p>
+            <div class="mb-4">
+              <input 
+                id="joinPinInput" 
+                type="text" 
+                inputmode="numeric"
+                maxlength="6" 
+                placeholder="KOD PIN (6 cyfr)" 
+                class="w-full text-center font-display tracking-[0.25em] text-2xl sm:text-3xl font-bold py-3.5 px-4 rounded-2xl bg-black/50 border-2 border-indigo-400/50 focus:border-amber-400 focus:outline-none text-amber-300 placeholder-indigo-300/30 uppercase"
+              />
+            </div>
+          </div>
+          <button id="joinRoomBtn" class="w-full py-4 rounded-2xl font-display text-xl font-bold text-gray-950 btn-3d-amber flex items-center justify-center gap-2">
+            <span>DOŁĄCZ DO POKOJU</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+        <!-- CREATE NEW ROOM (HOST & PLAY) -->
+        <div class="bg-gradient-to-b from-fuchsia-950/70 to-purple-950/80 backdrop-blur-xl border-2 border-fuchsia-400/30 rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-2xl">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div class="w-12 h-12 rounded-2xl bg-fuchsia-500/20 border border-fuchsia-400/40 flex items-center justify-center text-fuchsia-300 text-2xl">
+                <i class="fa-solid fa-crown"></i>
+              </div>
+              <span id="questionCountBadge" class="text-xs font-bold px-3 py-1 rounded-full bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-200">
+                12 pytań w puli
+              </span>
+            </div>
+            <h2 class="font-display text-2xl sm:text-3xl font-bold text-white">Stwórz Pokój Gry</h2>
+            <p class="text-purple-200/75 text-sm mt-1 mb-5">
+              Utwórz nową arenę, wyświetl kod PIN dla graczy na różnych urządzeniach (lub dodaj boty) i rozpocznij rywalizację!
+            </p>
+
+            <!-- Power-ups Preview Pills -->
+            <div class="bg-black/30 border border-white/10 rounded-2xl p-3.5 mb-5">
+              <div class="text-xs font-bold uppercase tracking-wider text-amber-300 mb-2 flex items-center gap-1.5">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Dostępne Powery w grze:
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-xs text-purple-100">
+                <div class="flex items-center gap-1.5 bg-white/5 px-2.5 py-1.5 rounded-lg">
+                  <span>💥</span> <span><b>Sabotaż:</b> -400 pkt rywalowi</span>
+                </div>
+                <div class="flex items-center gap-1.5 bg-white/5 px-2.5 py-1.5 rounded-lg">
+                  <span>🧛</span> <span><b>Wampir:</b> Kradzież 250 pkt</span>
+                </div>
+                <div class="flex items-center gap-1.5 bg-white/5 px-2.5 py-1.5 rounded-lg">
+                  <span>❄️</span> <span><b>Lód:</b> -200 pkt & Reset passy</span>
+                </div>
+                <div class="flex items-center gap-1.5 bg-white/5 px-2.5 py-1.5 rounded-lg">
+                  <span>⚡</span> <span><b>Mega Boost:</b> +350 pkt</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button id="createRoomBtn" class="w-full py-4 rounded-2xl font-display text-xl font-bold text-white btn-3d-purple flex items-center justify-center gap-2">
+            <i class="fa-solid fa-plus-circle"></i>
+            <span>STWÓRZ NOWĄ GRĘ (HOST)</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         VIEW 2: MULTIPLAYER LOBBY
+         ========================================== -->
+    <section id="viewLobby" class="w-full max-w-5xl mx-auto hidden">
+      <div class="bg-purple-950/75 backdrop-blur-xl border-2 border-purple-400/30 rounded-3xl p-6 sm:p-8 shadow-2xl">
+        <!-- Top PIN Banner -->
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-6 pb-6 border-b border-white/10">
+          <div class="text-center lg:text-left">
+            <span class="text-xs font-bold uppercase tracking-widest text-amber-300 bg-amber-400/10 border border-amber-400/30 px-3 py-1 rounded-full">
+              Poczekalnia Multiplayer Na Żywo
+            </span>
+            <h2 class="font-display text-3xl sm:text-4xl font-bold mt-2">Dołącz na dowolnym urządzeniu!</h2>
+            <p class="text-purple-200/75 text-sm mt-1">
+              Otwórz stronę na telefonie lub drugim komputerze i wpisz poniższy kod PIN:
+            </p>
+          </div>
+
+          <!-- Giant PIN Box -->
+          <div class="flex items-center gap-4 bg-black/50 border-2 border-amber-400/60 rounded-3xl px-6 py-4 shadow-inner">
+            <div>
+              <div class="text-[11px] uppercase tracking-widest text-purple-300 font-bold">KOD PIN GRY</div>
+              <div id="lobbyPinDisplay" class="font-display text-4xl sm:text-5xl font-bold text-amber-300 tracking-[0.2em]">------</div>
+            </div>
+            <button id="copyPinLobbyBtn" class="px-4 py-3 rounded-2xl bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/40 text-amber-200 font-bold text-sm flex flex-col items-center gap-1 transition">
+              <i class="fa-regular fa-copy text-lg"></i>
+              <span class="text-[11px]">Kopiuj</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Host Game Settings Bar (Visible for Host, read-only for Guests) -->
+        <div class="my-6 bg-black/30 border border-white/10 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+          <div class="flex flex-wrap items-center gap-4">
+            <!-- Streak Threshold Setting -->
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold uppercase text-purple-300"><i class="fa-solid fa-fire text-amber-400 mr-1"></i>Passa do Powera:</span>
+              <select id="streakTargetSelect" class="bg-purple-900/90 border border-purple-400/40 rounded-xl px-3 py-1.5 text-sm font-bold text-white focus:outline-none">
+                <option value="5" selected>5 pytań z rzędu (Klasyczny)</option>
+                <option value="3">3 pytania z rzędu (Szybka walka)</option>
+                <option value="2">2 pytania z rzędu (Tryb Chaosu!)</option>
+              </select>
+            </div>
+
+            <!-- Question Time Limit Setting -->
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold uppercase text-purple-300"><i class="fa-regular fa-clock text-sky-400 mr-1"></i>Czas na pytanie:</span>
+              <select id="questionTimeSelect" class="bg-purple-900/90 border border-purple-400/40 rounded-xl px-3 py-1.5 text-sm font-bold text-white focus:outline-none">
+                <option value="15">15 sekund</option>
+                <option value="20" selected>20 sekund</option>
+                <option value="30">30 sekund</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Add AI Bot Button (For testing solo or spicing up multiplayer) -->
+          <div id="hostBotControls" class="flex items-center gap-2">
+            <button id="addBotBtn" class="px-3.5 py-2 rounded-xl bg-indigo-500/25 hover:bg-indigo-500/40 border border-indigo-400/40 text-indigo-200 text-xs sm:text-sm font-bold flex items-center gap-2 transition">
+              <i class="fa-solid fa-robot text-indigo-300"></i>
+              <span>+ Dodaj Bota Rywala</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Connected Players Grid -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-display text-xl font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-users text-fuchsia-400"></i>
+              <span>Gracze w pokoju (<span id="lobbyPlayerCount">0</span>)</span>
+            </h3>
+            <span id="lobbyStatusHint" class="text-xs text-purple-300 animate-pulse">
+              Oczekiwanie na rozpoczęcie gry przez Hosta...
+            </span>
+          </div>
+
+          <div id="lobbyPlayersGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 min-h-[120px]">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Bottom Action Buttons -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/10">
+          <button id="leaveLobbyBtn" class="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-red-500/20 border border-white/15 hover:border-red-400/40 text-sm font-bold text-purple-200 hover:text-red-200 transition">
+            <i class="fa-solid fa-arrow-left mr-2"></i>Opuść Pokój
+          </button>
+
+          <button id="startGameBtn" class="w-full sm:w-auto px-10 py-4 rounded-2xl font-display text-2xl font-bold text-gray-950 btn-3d-amber flex items-center justify-center gap-3">
+            <i class="fa-solid fa-play"></i>
+            <span>ROZPOCZNIJ QUIZ!</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         VIEW 3: ACTIVE QUESTION & COMBAT HUD
+         ========================================== -->
+    <section id="viewGame" class="w-full max-w-5xl mx-auto hidden">
+      <!-- Top HUD: Score, Streak Progress (5 Flames), & Power-Up Trigger -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 mb-4">
+        <!-- Player Stats & Question Progress -->
+        <div class="lg:col-span-5 bg-purple-950/80 border border-white/15 rounded-2xl px-4 py-3 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div id="hudMyAvatar" class="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center text-2xl border border-white/15">🦊</div>
+            <div>
+              <div id="hudMyName" class="font-bold text-sm text-purple-200">Gracz</div>
+              <div class="font-display text-2xl font-bold text-amber-300"><span id="hudMyScore">0</span> <span class="text-xs text-purple-300 font-sans">pkt</span></div>
+            </div>
+          </div>
+
+          <div class="text-right">
+            <span id="hudCategoryBadge" class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-200 border border-fuchsia-400/30">Kategoria</span>
+            <div class="font-display text-lg font-bold text-white mt-0.5">
+              Pytanie <span id="hudQuestionIndex">1</span>/<span id="hudQuestionTotal">12</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Streak Meter (Passa 5 Pytań) & Power-Up Action Button -->
+        <div class="lg:col-span-7 bg-purple-950/80 border border-white/15 rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div>
+              <div class="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1">
+                <span>Passa do Powera:</span>
+                <span id="hudStreakText" class="text-white">0 / 5</span>
+              </div>
+              <!-- Flame Icons Row -->
+              <div id="hudFlameIcons" class="flex items-center gap-1.5 mt-1">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Power-Up Combat Button -->
+          <div class="flex items-center gap-2">
+            <button id="openPowerModalBtn" disabled class="px-4 py-2.5 rounded-xl font-display font-bold text-sm sm:text-base flex items-center gap-2 transition disabled:opacity-40 disabled:bg-white/10 disabled:text-purple-300 bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-gray-950">
+              <i class="fa-solid fa-bolt"></i>
+              <span>UŻYJ POWERA (<span id="hudPowerCount">0</span>)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Question Card + Countdown Timer -->
+      <div class="bg-gradient-to-b from-purple-900/90 to-indigo-950/90 backdrop-blur-xl border-2 border-purple-400/40 rounded-3xl p-6 sm:p-8 shadow-2xl mb-5 relative overflow-hidden">
+        <!-- Animated Progress Time Bar -->
+        <div class="w-full h-2.5 bg-black/40 rounded-full overflow-hidden mb-5">
+          <div id="questionTimerBar" class="h-full bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-500 transition-all duration-200" style="width: 100%;"></div>
+        </div>
+
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+          <!-- Timer Circle -->
+          <div class="w-20 h-20 rounded-full bg-black/50 border-4 border-amber-400 flex flex-col items-center justify-center shrink-0 shadow-lg">
+            <span id="questionTimerSeconds" class="font-display text-3xl font-bold text-white leading-none">20</span>
+            <span class="text-[10px] uppercase tracking-wider text-amber-300 font-bold">sek</span>
+          </div>
+
+          <!-- Question Text -->
+          <div class="flex-1 text-center md:text-left">
+            <h2 id="questionTextDisplay" class="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-snug">
+              Treść pytania pojawi się tutaj...
+            </h2>
+          </div>
+
+          <!-- Answered Count Pill -->
+          <div class="bg-black/40 border border-white/15 rounded-2xl px-4 py-3 text-center shrink-0">
+            <div class="text-xs text-purple-300 font-semibold">Odpowiedziało</div>
+            <div id="hudAnsweredCounter" class="font-display text-2xl font-bold text-emerald-400">0 / 1</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Geometric Kahoot-Style Answer Buttons -->
+      <div id="answerButtonsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Answer 0: Red Triangle -->
+        <button data-index="0" class="ans-card ans-red rounded-2xl p-5 sm:p-6 text-left flex items-center gap-4 group">
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-black/20 flex items-center justify-center text-white text-2xl shrink-0">
+            ▲
+          </div>
+          <span class="ans-text font-display text-xl sm:text-2xl font-bold text-white leading-tight break-words">Opcja A</span>
+        </button>
+
+        <!-- Answer 1: Blue Diamond -->
+        <button data-index="1" class="ans-card ans-blue rounded-2xl p-5 sm:p-6 text-left flex items-center gap-4 group">
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-black/20 flex items-center justify-center text-white text-2xl shrink-0">
+            ◆
+          </div>
+          <span class="ans-text font-display text-xl sm:text-2xl font-bold text-white leading-tight break-words">Opcja B</span>
+        </button>
+
+        <!-- Answer 2: Yellow Circle -->
+        <button data-index="2" class="ans-card ans-yellow rounded-2xl p-5 sm:p-6 text-left flex items-center gap-4 group">
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-black/20 flex items-center justify-center text-white text-2xl shrink-0">
+            ●
+          </div>
+          <span class="ans-text font-display text-xl sm:text-2xl font-bold text-white leading-tight break-words">Opcja C</span>
+        </button>
+
+        <!-- Answer 3: Green Square -->
+        <button data-index="3" class="ans-card ans-green rounded-2xl p-5 sm:p-6 text-left flex items-center gap-4 group">
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-black/20 flex items-center justify-center text-white text-2xl shrink-0">
+            ■
+          </div>
+          <span class="ans-text font-display text-xl sm:text-2xl font-bold text-white leading-tight break-words">Opcja D</span>
+        </button>
+      </div>
+
+      <!-- Feedback Banner after answering -->
+      <div id="postAnswerBanner" class="hidden mt-5 bg-black/50 border-2 border-white/20 rounded-2xl p-4 text-center">
+        <p id="postAnswerText" class="font-display text-xl font-bold text-white"></p>
+      </div>
+
+      <!-- Round Leaderboard & Next Question Drawer (Shown when round ends) -->
+      <div id="roundSummaryPanel" class="hidden mt-6 bg-purple-950/90 backdrop-blur-xl border-2 border-amber-400/50 rounded-3xl p-6 shadow-2xl">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4 pb-4 border-b border-white/10">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-amber-300">Podsumowanie Rundy & Walka na Powery</span>
+            <h3 class="font-display text-2xl sm:text-3xl font-bold text-white mt-1" id="roundCorrectAnswerLabel">Poprawna odpowiedź: ...</h3>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <!-- Quick Power Button inside Round Summary -->
+            <button id="roundSummaryPowerBtn" class="hidden px-5 py-3 rounded-2xl font-display font-bold text-gray-950 bg-gradient-to-r from-amber-300 via-yellow-400 to-orange-500 power-ready-glow flex items-center gap-2">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span>ATAKUJ RYWALA POWEREM!</span>
+            </button>
+
+            <button id="nextQuestionHostBtn" class="hidden px-7 py-3.5 rounded-2xl font-display text-lg font-bold text-gray-950 btn-3d-amber flex items-center gap-2">
+              <span>NASTĘPNE PYTANIE</span>
+              <i class="fa-solid fa-forward-step"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Standings List -->
+        <div class="mt-4">
+          <div class="text-xs font-bold uppercase tracking-wider text-purple-300 mb-3 flex items-center justify-between">
+            <span>Aktualny Ranking Graczy (Na Żywo)</span>
+            <span>Passa & Punkty</span>
+          </div>
+          <div id="roundLeaderboardList" class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         VIEW 4: FINAL PODIUM & WINNER SCREEN
+         ========================================== -->
+    <section id="viewPodium" class="w-full max-w-5xl mx-auto hidden">
+      <div class="bg-purple-950/80 backdrop-blur-xl border-2 border-amber-400/40 rounded-3xl p-6 sm:p-8 shadow-2xl text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-xs font-bold uppercase tracking-widest mb-3">
+          <i class="fa-solid fa-trophy"></i> Wielki Finał QuizArena
+        </div>
+        <h2 class="font-display text-3xl sm:text-5xl font-bold text-white">Podium Zwycięzców!</h2>
+        <p class="text-purple-200/80 text-sm sm:text-base mt-1 mb-8">Osoba z największą liczbą punktów po walce na wiedzę i Powery wygrywa!</p>
+
+        <!-- 3-Place Podium Stage -->
+        <div id="podiumStage" class="grid grid-cols-3 gap-3 sm:gap-6 items-end max-w-2xl mx-auto mb-10 pt-6">
+          <!-- Populated by JS (2nd, 1st, 3rd) -->
+        </div>
+
+        <!-- Special Match Awards -->
+        <div id="podiumAwardsGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 text-left">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Complete Final Scoreboard -->
+        <div class="bg-black/40 border border-white/10 rounded-2xl p-4 sm:p-5 text-left mb-8">
+          <h3 class="font-display text-lg font-bold text-amber-300 mb-3">Pełna Tabela Wyników</h3>
+          <div id="finalScoreboardList" class="space-y-2"></div>
+        </div>
+
+        <!-- Play Again / Back Home -->
+        <div class="flex flex-wrap items-center justify-center gap-4">
+          <button id="playAgainHostBtn" class="hidden px-8 py-4 rounded-2xl font-display text-xl font-bold text-gray-950 btn-3d-amber flex items-center gap-2">
+            <i class="fa-solid fa-rotate-right"></i>
+            <span>ZAGRAJ PONOWNIE W TYM POKOJU</span>
+          </button>
+          <button id="backToHomeFromPodiumBtn" class="px-6 py-4 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 font-bold text-sm text-white transition">
+            Powrót do Menu Głównego
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================
+       MODAL 1: POWER-UP COMBAT DRAWER (WYBIERZ POWER & OFIARĘ)
+       ========================================================= -->
+  <div id="powerCombatModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-gradient-to-b from-purple-900 to-indigo-950 border-2 border-amber-400 rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+      <button id="closePowerModalBtn" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-12 h-12 rounded-2xl bg-amber-400/20 border border-amber-400 flex items-center justify-center text-3xl">
+          ⚡
+        </div>
+        <div>
+          <span class="text-xs font-bold uppercase tracking-widest text-amber-300">Nagroda za Passę!</span>
+          <h3 class="font-display text-2xl sm:text-3xl font-bold text-white">Użyj Powera Bojowego</h3>
+        </div>
+      </div>
+
+      <!-- STEP 1: Choose Power Type -->
+      <div class="mb-5">
+        <label class="block text-xs font-bold uppercase tracking-wider text-purple-200 mb-2.5">
+          Krok 1: Wybierz rodzaj Powera:
+        </label>
+        <div id="powerTypeGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Power 1: Sabotage -->
+          <button data-power="sabotage" class="power-choice-btn text-left p-3.5 rounded-2xl border-2 border-amber-400 bg-amber-400/15 transition flex items-start gap-3">
+            <span class="text-3xl">💥</span>
+            <div>
+              <div class="font-display font-bold text-white text-base">Sabotaż Punktowy</div>
+              <div class="text-xs text-amber-200 font-semibold">-400 pkt wybranemu graczowi</div>
+              <p class="text-[11px] text-purple-200/80 mt-0.5">Idealny, by zrzucić lidera z pierwszego miejsca!</p>
+            </div>
+          </button>
+
+          <!-- Power 2: Vampire Steal -->
+          <button data-power="vampire" class="power-choice-btn text-left p-3.5 rounded-2xl border-2 border-white/15 bg-black/30 hover:border-purple-400 transition flex items-start gap-3">
+            <span class="text-3xl">🧛</span>
+            <div>
+              <div class="font-display font-bold text-white text-base">Wampir Punktów</div>
+              <div class="text-xs text-rose-300 font-semibold">-250 pkt rywalowi, +250 pkt Tobie</div>
+              <p class="text-[11px] text-purple-200/80 mt-0.5">Kradniesz punkty przeciwnikowi na własne konto!</p>
+            </div>
+          </button>
+
+          <!-- Power 3: Freeze Streak -->
+          <button data-power="freeze" class="power-choice-btn text-left p-3.5 rounded-2xl border-2 border-white/15 bg-black/30 hover:border-purple-400 transition flex items-start gap-3">
+            <span class="text-3xl">❄️</span>
+            <div>
+              <div class="font-display font-bold text-white text-base">Lodowy Pocisk</div>
+              <div class="text-xs text-sky-300 font-semibold">-200 pkt & Reset Passy rywala do 0</div>
+              <p class="text-[11px] text-purple-200/80 mt-0.5">Zatrzymuje serię rywala, zanim zdobędzie Powera!</p>
+            </div>
+          </button>
+
+          <!-- Power 4: Self Mega Boost -->
+          <button data-power="boost" class="power-choice-btn text-left p-3.5 rounded-2xl border-2 border-white/15 bg-black/30 hover:border-purple-400 transition flex items-start gap-3">
+            <span class="text-3xl">⚡</span>
+            <div>
+              <div class="font-display font-bold text-white text-base">Złoty Mega Boost</div>
+              <div class="text-xs text-emerald-300 font-semibold">+350 pkt bezpośrednio dla Ciebie</div>
+              <p class="text-[11px] text-purple-200/80 mt-0.5">Bezpieczny zastrzyk punktów na Twoje konto.</p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 2: Choose Target Opponent -->
+      <div id="targetSelectionSection" class="mb-6">
+        <label class="block text-xs font-bold uppercase tracking-wider text-purple-200 mb-2.5">
+          Krok 2: Wybierz gracza, którego chcesz zaatakować:
+        </label>
+        <div id="powerTargetPlayersList" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-56 overflow-y-auto pr-1">
+          <!-- Populated dynamically with live opponents -->
+        </div>
+      </div>
+
+      <button id="executePowerAttackBtn" class="w-full py-4 rounded-2xl font-display text-xl font-bold text-gray-950 btn-3d-amber flex items-center justify-center gap-2">
+        <i class="fa-solid fa-fire-flame-curved"></i>
+        <span>WYKONAJ ATAK POWEREM!</span>
+      </button>
+    </div>
+  </div>
+
+
+  <!-- =========================================================
+       APPLICATION LOGIC & FIREBASE MULTIPLAYER SYNCHRONIZATION
+       ========================================================= -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, deleteDoc, addDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    /* ============================================================
+       KONFIGURACJA FIREBASE – wklej tu dane swojej aplikacji webowej
+       (Firebase Console → Ustawienia projektu → Twoje aplikacje → SDK)
+       ============================================================ */
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyAraHTxnw9nB2nBrK77my2W7eNGsbaTKJo",
+      authDomain: "naniemiecki.firebaseapp.com",
+      projectId: "naniemiecki",
+      storageBucket: "naniemiecki.firebasestorage.app",
+      messagingSenderId: "9020338678",
+      appId: "1:9020338678:web:2b290d7731a23dd08bd7d7"
+    };
+
+    /* ============================================================================
+       1. DANE NA SZTYWNO (HARDCODED PRESENTATION QUESTIONS)
+       Możesz edytować tę tablicę bezpośrednio w kodzie LUB użyć przycisku
+       "Edytuj Pytania / GitHub" na górnym pasku aplikacji!
+       ============================================================================ */
+    /*__HARDCODED_QUESTIONS_START__*/
+    let HARDCODED_QUESTIONS = [
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Co oznacza po niemiecku słowo \"obdachlos\"?",
+    "options": [
+      "Bezrobotny",
+      "Bezdomny",
+      "Niepełnosprawny"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Jak przetłumaczysz na język niemiecki rzeczownik \"bieda\"?",
+    "options": [
+      "die Armut",
+      "die Sucht",
+      "die Gewalt"
+    ],
+    "correct": 0
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Słowo \"arbeitslos\" opisuje osobę, która:",
+    "options": [
+      "Żyje na ulicy",
+      "Straciła pracę i szuka zatrudnienia",
+      "Porusza się na wózku"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Co znaczy wyrażenie \"im Rollstuhl sitzen\"?",
+    "options": [
+      "Poruszać się na wózku",
+      "Żyć na ulicy",
+      "Szukać pracy"
+    ],
+    "correct": 0
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Jakie słowo w języku niemieckim oznacza \"uzależnienie\"?",
+    "options": [
+      "die Armut",
+      "die Behinderung",
+      "die Sucht"
+    ],
+    "correct": 2
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Jak przetłumaczysz słowo \"die Obdachlosigkeit\"?",
+    "options": [
+      "Bezrobocie",
+      "Bezdomność",
+      "Przemoc"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Co oznacza przymiotnik \"behindert\"?",
+    "options": [
+      "Biedny",
+      "Niepełnosprawny",
+      "Uzależniony od alkoholu"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Jak na niemiecki przetłumaczyć pojęcie \"przestępczość\"?",
+    "options": [
+      "die Kriminalität",
+      "die Diskriminierung",
+      "die Umwelt"
+    ],
+    "correct": 0
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Słowo \"die Gewalt\" oznacza po polsku:",
+    "options": [
+      "Pomoc",
+      "Przemoc",
+      "Zaangażowanie"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Jak po niemiecku określisz \"środowisko naturalne\"?",
+    "options": [
+      "die Hilfe",
+      "das Engagement",
+      "die Umwelt"
+    ],
+    "correct": 2
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Co oznacza zwrot \"herrenlose Tiere\"?",
+    "options": [
+      "Głodujący ludzie",
+      "Bezpańskie zwierzęta",
+      "Ofiary przemocy"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Wyrażenie \"Menschen in Not\" przetłumaczysz jako:",
+    "options": [
+      "Ludzie w potrzebie",
+      "Osoby bez pracy",
+      "Chorzy i niepełnosprawni"
+    ],
+    "correct": 0
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Jak przetłumaczysz zwrot \"Gewaltopfer\"?",
+    "options": [
+      "Ofiary przemocy",
+      "Ubogie dzieci",
+      "Uzależnieni od narkotyków"
+    ],
+    "correct": 0
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Co oznacza rzeczownik \"das Engagement\"?",
+    "options": [
+      "Zaangażowanie",
+      "Bezrobocie",
+      "Dyskryminacja"
+    ],
+    "correct": 0
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Wyrażenie \"die Stelle verlieren\" oznacza:",
+    "options": [
+      "Zgubić pieniądze",
+      "Stracić pracę",
+      "Zmienić miejsce zamieszkania"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Jak zapytasz kolegę po niemiecku \"Jaki jest Twój problem społeczny?\"",
+    "options": [
+      "Was ist dein soziales Problem?",
+      "Wo arbeitest du?",
+      "Wie geht es dir?"
+    ],
+    "correct": 0
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Wyrażenie \"alltägliche Hilfe\" przetłumaczysz jako:",
+    "options": [
+      "Pomoc finansowa",
+      "Codzienna pomoc",
+      "Rzadka pomoc"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Co oznacza zwrot \"Senkung der Kriminalität\"?",
+    "options": [
+      "Zwiększenie przestępczości",
+      "Obniżenie przestępczości",
+      "Spadek ubóstwa"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Jakie słowo oznacza \"dyskryminacja\"?",
+    "options": [
+      "die Kriminalität",
+      "die Diskriminierung",
+      "die Arbeitslosigkeit"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Wyrażenie \"vor Kurzem\" oznacza:",
+    "options": [
+      "Dawno temu",
+      "Niedawno / od niedawna",
+      "Nigdy"
+    ],
+    "correct": 1
+  }
+];
+    /*__HARDCODED_QUESTIONS_END__*/
+
+    /* ============================================================================
+       2. SOUND SYNTHESIZER (WEB AUDIO API - NO EXTERNAL MP3 NEEDED)
+       ============================================================================ */
+    class SoundEngine {
+      constructor() {
+        this.enabled = true;
+        this.ctx = null;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) this.ctx = new AudioCtx();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playTone(freq, type = 'sine', duration = 0.15, delay = 0, gainVal = 0.15) {
+        if (!this.enabled) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime + delay);
+          gain.gain.setValueAtTime(gainVal, this.ctx.currentTime + delay);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + delay + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(this.ctx.currentTime + delay);
+          osc.stop(this.ctx.currentTime + delay + duration);
+        } catch (e) {}
+      }
+      click() { this.playTone(520, 'triangle', 0.08, 0, 0.12); }
+      tick() { this.playTone(800, 'sine', 0.05, 0, 0.06); }
+      correct() {
+        this.playTone(523.25, 'triangle', 0.12, 0, 0.18);
+        this.playTone(659.25, 'triangle', 0.12, 0.1, 0.18);
+        this.playTone(783.99, 'triangle', 0.15, 0.2, 0.18);
+        this.playTone(1046.50, 'triangle', 0.3, 0.3, 0.22);
+      }
+      wrong() {
+        this.playTone(240, 'sawtooth', 0.22, 0, 0.16);
+        this.playTone(180, 'sawtooth', 0.35, 0.18, 0.18);
+      }
+      powerUnlocked() {
+        [440, 554.37, 659.25, 880, 1108.73].forEach((f, idx) => {
+          this.playTone(f, 'square', 0.14, idx * 0.07, 0.12);
+        });
+      }
+      attackLaunch() {
+        this.playTone(700, 'sawtooth', 0.12, 0, 0.2);
+        this.playTone(420, 'sawtooth', 0.18, 0.1, 0.2);
+        this.playTone(920, 'square', 0.25, 0.22, 0.2);
+      }
+      gotHit() {
+        this.playTone(150, 'sawtooth', 0.3, 0, 0.28);
+        this.playTone(110, 'square', 0.4, 0.15, 0.3);
+        this.playTone(85, 'sawtooth', 0.45, 0.3, 0.3);
+      }
+      fanfare() {
+        const notes = [523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5];
+        const delays = [0, 0.14, 0.28, 0.42, 0.62, 0.78];
+        notes.forEach((n, i) => this.playTone(n, 'triangle', 0.25, delays[i], 0.2));
+      }
+    }
+    const sfx = new SoundEngine();
+
+    /* ============================================================================
+       3. STATE & CONSTANTS
+       ============================================================================ */
+    const AVATARS = ['🦊', '🐼', '🦁', '🐯', '🐸', '🦄', '🐙', '🦖', '🤖', '👽', '🧙‍♂️', '🥷', '⚡', '🔥', '👑', '🚀'];
+    const BOT_PROFILES = [
+      { name: 'Kuba_Turbo', avatar: '🦖' },
+      { name: 'Zosia_Quiz', avatar: '🦄' },
+      { name: 'Mistrz_Jan', avatar: '🧙‍♂️' },
+      { name: 'Haker_99', avatar: '🥷' },
+      { name: 'Ola_Błysk', avatar: '⚡' },
+      { name: 'Tomek_AI', avatar: '🤖' }
+    ];
+
+    const POWER_DEFINITIONS = {
+      sabotage: {
+        id: 'sabotage',
+        name: 'Sabotaż Punktowy',
+        icon: '💥',
+        needsTarget: true,
+        desc: '-400 pkt wybranemu rywalowi'
+      },
+      vampire: {
+        id: 'vampire',
+        name: 'Wampir Punktów',
+        icon: '🧛',
+        needsTarget: true,
+        desc: 'Kradzież 250 pkt od wybranego gracza'
+      },
+      freeze: {
+        id: 'freeze',
+        name: 'Lodowy Pocisk',
+        icon: '❄️',
+        needsTarget: true,
+        desc: '-200 pkt i wyzerowanie Passy rywala'
+      },
+      boost: {
+        id: 'boost',
+        name: 'Złoty Mega Boost',
+        icon: '⚡',
+        needsTarget: false,
+        desc: '+350 pkt na Twoje konto'
+      }
+    };
+
+    let db = null, auth = null, firebaseReady = false;
+    let unsubRoom = null, unsubActions = null;
+    let hostRoom = null;      // TYLKO host: pełny stan gry (z poprawnymi odpowiedziami)
+
+    let myPlayerId = 'player_' + Math.random().toString(36).substring(2, 10);
+    let myNickname = '';
+    let myAvatar = AVATARS[0];
+    let currentRoomPin = null;
+    let isRoomHost = false;
+    let currentRoomData = null; // publiczny stan pokoju (bez poprawnych odpowiedzi w trakcie pytania)
+    let prevMe = null;
+    let podiumShown = false;
+
+    let questionInterval = null;
+    let botSimulationTimeouts = [];
+    let renderedQuestionIndex = -1;
+    let hasAnsweredCurrentQuestion = false;
+    let processedCombatIds = new Set();
+    let selectedPowerKey = 'sabotage';
+    let selectedTargetPlayerId = null;
+
+    const roomDoc = (pin) => doc(db, 'rooms', String(pin));
+
+    async function initFirebase() {
+      if (!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.startsWith('WKLEJ')) return false;
+      const app = initializeApp(FIREBASE_CONFIG);
+      auth = getAuth(app);
+      db = getFirestore(app);
+      await signInAnonymously(auth);
+      myPlayerId = auth.currentUser.uid;
+      return true;
+    }
+
+    function newPlayer(id, name, avatar, isBot, isHost) {
+      return { id, name, avatar, score: 0, streak: 0, maxStreak: 0, powersAvailable: 0, powersUsed: 0,
+        lastAnswerIndex: -1, lastAnswerCorrect: false, lastPointsEarned: 0, isBot, isHost, disconnected: false };
+    }
+
+    // Host zapisuje do Firestore wersję publiczną: bez listy pytań, poprawna odpowiedź dopiero po rundzie
+    function publishState() {
+      if (!hostRoom) return;
+      const q = hostRoom.questions[hostRoom.currentQuestionIndex] || hostRoom.questions[0];
+      const reveal = hostRoom.status === 'summary' || hostRoom.status === 'finished';
+      const { questions, ...rest } = hostRoom;
+      const pub = JSON.parse(JSON.stringify({
+        ...rest,
+        serverNow: Date.now(),
+        totalQuestions: questions.length,
+        currentQuestion: { category: q.category, question: q.question, options: q.options, correct: reveal ? q.correct : null }
+      }));
+      setDoc(roomDoc(hostRoom.pin), pub).catch((e) => console.error('Zapis pokoju:', e));
+      handleRoomSnapshotUpdate(pub);
+    }
+
+    // Klient wysyła akcję (join / answer / power / leave) do Hosta
+    function sendToHost(msg) {
+      if (!db || !currentRoomPin) return;
+      addDoc(collection(roomDoc(currentRoomPin), 'actions'), { ...msg, pid: myPlayerId, ts: Date.now() })
+        .catch((e) => console.error('Wysyłanie akcji:', e));
+    }
+
+    function teardownNetwork() {
+      if (unsubRoom) { unsubRoom(); unsubRoom = null; }
+      if (unsubActions) { unsubActions(); unsubActions = null; }
+      hostRoom = null; currentRoomData = null;
+    }
+
+    function leaveRoom() {
+      clearQuestionTimer();
+      clearBotTimeouts();
+      if (currentRoomPin && db) {
+        if (hostRoom) deleteDoc(roomDoc(currentRoomPin)).catch(() => {});
+        else sendToHost({ type: 'leave' });
+      }
+      teardownNetwork();
+      currentRoomPin = null;
+      isRoomHost = false;
+      renderedQuestionIndex = -1;
+      prevMe = null;
+      podiumShown = false;
+      switchView('viewHome');
+    }
+
+    window.addEventListener('beforeunload', () => {
+      if (hostRoom && db) deleteDoc(roomDoc(hostRoom.pin)).catch(() => {});
+    });
+
+    function hostRemovePlayer(pid) {
+      if (!hostRoom || !hostRoom.players[pid]) return;
+      if (hostRoom.status === 'lobby') delete hostRoom.players[pid];
+      else hostRoom.players[pid].disconnected = true;
+      publishState();
+    }
+
+    function hostHandleMessage(msg) {
+      if (!hostRoom || !msg || typeof msg !== 'object') return;
+      const pid = String(msg.pid || '').slice(0, 60);
+      if (!pid) return;
+      if (msg.type === 'join') {
+        const name = String(msg.name || '').trim().slice(0, 20) || 'Gracz';
+        const avatar = AVATARS.includes(msg.avatar) ? msg.avatar : AVATARS[0];
+        const ex = hostRoom.players[pid];
+        if (ex) { ex.name = name; ex.avatar = avatar; ex.disconnected = false; }
+        else hostRoom.players[pid] = newPlayer(pid, name, avatar, false, false);
+        publishState();
+        return;
+      }
+      if (!hostRoom.players[pid]) return;
+      if (msg.type === 'answer') hostProcessAnswer(pid, msg.idx);
+      else if (msg.type === 'power') applyPowerEffectInRoom(pid, msg.targetId, msg.powerKey);
+      else if (msg.type === 'leave') hostRemovePlayer(pid);
+    }
+
+    /* ============================================================================
+       6. UI INITIALIZATION & AVATAR PICKER
+       ============================================================================ */
+    function renderAvatarPicker() {
+      const grid = document.getElementById('avatarPickerGrid');
+      grid.innerHTML = '';
+      AVATARS.forEach((emoji) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        const isSelected = emoji === myAvatar;
+        btn.className = `h-10 sm:h-11 rounded-xl flex items-center justify-center text-xl transition border ${
+          isSelected
+            ? 'bg-amber-400/25 border-amber-400 scale-110 shadow-md shadow-amber-400/20'
+            : 'bg-black/30 border-white/10 hover:bg-white/10'
+        }`;
+        btn.textContent = emoji;
+        btn.onclick = () => {
+          sfx.click();
+          myAvatar = emoji;
+          renderAvatarPicker();
+        };
+        grid.appendChild(btn);
+      });
+    }
+
+    function updateQuestionCountBadge() {
+      const badge = document.getElementById('questionCountBadge');
+      if (badge) badge.textContent = `${HARDCODED_QUESTIONS.length} pytań w puli`;
+      const counter = document.getElementById('editorQuestionCounter');
+      if (counter) counter.textContent = HARDCODED_QUESTIONS.length;
+    }
+
+    function switchView(viewId) {
+      ['viewHome', 'viewLobby', 'viewGame', 'viewPodium'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('hidden', id !== viewId);
+      });
+      const headerBadge = document.getElementById('headerRoomBadge');
+      if (currentRoomPin && viewId !== 'viewHome') {
+        headerBadge.classList.remove('hidden');
+        headerBadge.classList.add('flex');
+        document.getElementById('headerPinValue').textContent = currentRoomPin;
+      } else {
+        headerBadge.classList.add('hidden');
+        headerBadge.classList.remove('flex');
+      }
+    }
+
+    function showToastBanner(htmlContent, borderClass = 'border-amber-400') {
+      const container = document.getElementById('combatToastContainer');
+      const toast = document.createElement('div');
+      toast.className = `bg-gray-950/95 border-2 ${borderClass} rounded-2xl px-4 py-3 shadow-2xl text-white text-sm font-semibold flex items-center gap-3 transform transition-all duration-300 translate-y-0 opacity-100`;
+      toast.innerHTML = htmlContent;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 4200);
+    }
+
+    /* ============================================================================
+       7. CREATE ROOM / JOIN ROOM / BOT ENGINE
+       ============================================================================ */
+    function getValidatedNickname() {
+      const input = document.getElementById('playerNameInput');
+      let name = input.value.trim().slice(0, 20);
+      if (!name) {
+        name = 'Gracz_' + Math.floor(100 + Math.random() * 899);
+        input.value = name;
+      }
+      myNickname = name;
+      return name;
+    }
+
+    function firebaseMissingToast() {
+      showToastBanner(`<span class="text-2xl">🔧</span><span>Firebase nie jest skonfigurowany lub nie połączył się. Wklej <b>FIREBASE_CONFIG</b> w pliku index.html (instrukcja w odpowiedzi).</span>`, 'border-rose-500');
+    }
+
+    async function handleCreateRoom() {
+      sfx.click();
+      if (!firebaseReady) return firebaseMissingToast();
+      const name = getValidatedNickname();
+      const btn = document.getElementById('createRoomBtn');
+      btn.disabled = true;
+      try {
+        teardownNetwork();
+        let pin = null;
+        for (let i = 0; i < 6 && !pin; i++) {
+          const cand = String(Math.floor(100000 + Math.random() * 900000));
+          if (!(await getDoc(roomDoc(cand))).exists()) pin = cand;
+        }
+        if (!pin) throw new Error('pin');
+        currentRoomPin = pin; isRoomHost = true;
+        renderedQuestionIndex = -1; prevMe = null; processedCombatIds.clear();
+        hostRoom = {
+          pin, hostId: myPlayerId, status: 'lobby', createdAt: Date.now(),
+          streakTarget: parseInt(document.getElementById('streakTargetSelect').value, 10) || 5,
+          questionTime: parseInt(document.getElementById('questionTimeSelect').value, 10) || 20,
+          currentQuestionIndex: 0, questionStartedAt: 0,
+          questions: JSON.parse(JSON.stringify(HARDCODED_QUESTIONS)),
+          players: { [myPlayerId]: newPlayer(myPlayerId, name, myAvatar, false, true) },
+          combatLogs: []
+        };
+        unsubActions = onSnapshot(collection(roomDoc(pin), 'actions'), (snap) => {
+          snap.docChanges().forEach((ch) => {
+            if (ch.type !== 'added') return;
+            const data = ch.doc.data();
+            deleteDoc(ch.doc.ref).catch(() => {});
+            hostHandleMessage(data);
+          });
+        }, (e) => console.error('Akcje:', e));
+        publishState();
+      } catch (err) {
+        console.error(err);
+        currentRoomPin = null; isRoomHost = false; teardownNetwork();
+        showToastBanner(`<span class="text-2xl">❌</span><span>Nie udało się utworzyć pokoju. Sprawdź reguły Firestore i internet.</span>`, 'border-rose-500');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function handleJoinRoom() {
+      sfx.click();
+      if (!firebaseReady) return firebaseMissingToast();
+      const pin = document.getElementById('joinPinInput').value.trim();
+      if (!/^\d{6}$/.test(pin)) {
+        showToastBanner(`<span class="text-2xl">⚠️</span><span>Wpisz poprawny, 6-cyfrowy kod PIN pokoju!</span>`, 'border-rose-400');
+        return;
+      }
+      const name = getValidatedNickname();
+      const btn = document.getElementById('joinRoomBtn');
+      btn.disabled = true;
+      try {
+        const snap = await getDoc(roomDoc(pin));
+        if (!snap.exists()) {
+          showToastBanner(`<span class="text-2xl">❌</span><span>Nie znaleziono pokoju o kodzie PIN <b>${pin}</b>. Upewnij się, że Host utworzył grę!</span>`, 'border-rose-500');
+          return;
+        }
+        teardownNetwork();
+        currentRoomPin = pin; isRoomHost = false;
+        renderedQuestionIndex = -1; prevMe = null; processedCombatIds.clear();
+        (snap.data().combatLogs || []).forEach((l) => processedCombatIds.add(l.id));
+        unsubRoom = onSnapshot(roomDoc(pin), (s) => {
+          if (!s.exists()) {
+            if (currentRoomPin === pin && !isRoomHost) {
+              leaveRoom();
+              showToastBanner(`<span class="text-2xl">🔌</span><span>Host zakończył grę.</span>`, 'border-rose-500');
+            }
+            return;
+          }
+          handleRoomSnapshotUpdate(s.data());
+        }, (e) => console.error('Pokój:', e));
+        sendToHost({ type: 'join', name, avatar: myAvatar });
+      } catch (err) {
+        console.error(err);
+        showToastBanner(`<span class="text-2xl">⚠️</span><span>Błąd połączenia z Firebase. Spróbuj ponownie.</span>`, 'border-rose-500');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function handleAddBot() {
+      if (!hostRoom) return;
+      sfx.click();
+      const existingNames = Object.values(hostRoom.players).map((p) => p.name);
+      const availableBots = BOT_PROFILES.filter((b) => !existingNames.includes(b.name));
+      const chosen = availableBots.length > 0
+        ? availableBots[Math.floor(Math.random() * availableBots.length)]
+        : { name: 'Bot_' + Math.floor(10 + Math.random() * 89), avatar: '🤖' };
+      const botId = 'bot_' + Math.random().toString(36).substring(2, 9);
+      hostRoom.players[botId] = newPlayer(botId, chosen.name, chosen.avatar, true, false);
+      publishState();
+      showToastBanner(`<span class="text-2xl">${chosen.avatar}</span><span>Do pokoju dołączył bot <b>${chosen.name}</b>!</span>`, 'border-indigo-400');
+    }
+
+    /* ============================================================================
+       8. REAL-TIME ROOM SNAPSHOT HANDLER
+       ============================================================================ */
+    function handleRoomSnapshotUpdate(room) {
+      currentRoomData = room;
+      room.localQuestionStart = Date.now() - ((room.serverNow || Date.now()) - (room.questionStartedAt || Date.now()));
+      isRoomHost = room.hostId === myPlayerId;
+
+      // Dźwięki / powiadomienia dla własnego gracza (na podstawie zmiany stanu)
+      const me = room.players[myPlayerId];
+      if (me && prevMe) {
+        if (room.status === 'question' && prevMe.lastAnswerIndex === -1 && me.lastAnswerIndex !== -1) {
+          me.lastAnswerCorrect ? sfx.correct() : sfx.wrong();
+        }
+        if ((me.powersAvailable || 0) > prevMe.powersAvailable) {
+          sfx.powerUnlocked();
+          showToastBanner(`<span class="text-3xl">🔥</span><div><div class="font-display font-bold text-amber-300">PASSA ${me.streak} TRAFIEŃ Z RZĘDU!</div><div class="text-xs">Odblokowano <b>POWERA BOJOWEGO</b>! Kliknij "UŻYJ POWERA", aby zaatakować rywala!</div></div>`, 'border-amber-400');
+        }
+      }
+      prevMe = me ? { lastAnswerIndex: me.lastAnswerIndex, powersAvailable: me.powersAvailable || 0 } : null;
+
+      processIncomingCombatEvents(room.combatLogs || []);
+
+      if (room.status !== 'finished') podiumShown = false;
+      if (room.status === 'lobby') {
+        renderedQuestionIndex = -1;
+        switchView('viewLobby');
+        renderLobbyView(room);
+      } else if (room.status === 'question' || room.status === 'summary') {
+        switchView('viewGame');
+        renderGameView(room);
+      } else if (room.status === 'finished') {
+        clearQuestionTimer();
+        switchView('viewPodium');
+        renderPodiumView(room);
+        podiumShown = true;
+      }
+    }
+
+    function renderLobbyView(room) {
+      document.getElementById('lobbyPinDisplay').textContent = room.pin;
+      const playersList = Object.values(room.players || {});
+      document.getElementById('lobbyPlayerCount').textContent = playersList.length;
+
+      // Sync host settings selects
+      const streakSelect = document.getElementById('streakTargetSelect');
+      const timeSelect = document.getElementById('questionTimeSelect');
+      streakSelect.value = String(room.streakTarget || 5);
+      timeSelect.value = String(room.questionTime || 20);
+      streakSelect.disabled = !isRoomHost;
+      timeSelect.disabled = !isRoomHost;
+
+      document.getElementById('hostBotControls').classList.toggle('hidden', !isRoomHost);
+      const startBtn = document.getElementById('startGameBtn');
+      startBtn.classList.toggle('hidden', !isRoomHost);
+
+      const hint = document.getElementById('lobbyStatusHint');
+      hint.textContent = isRoomHost
+        ? 'Jesteś Hostem! Gdy wszyscy dołączą, kliknij ROZPOCZNIJ QUIZ.'
+        : 'Oczekiwanie na rozpoczęcie gry przez Hosta...';
+
+      const grid = document.getElementById('lobbyPlayersGrid');
+      grid.innerHTML = '';
+      playersList.forEach((p) => {
+        const isMe = p.id === myPlayerId;
+        const card = document.createElement('div');
+        card.className = `rounded-2xl p-3.5 border flex items-center gap-3 transition ${
+          isMe
+            ? 'bg-amber-400/20 border-amber-400 shadow-lg'
+            : 'bg-black/40 border-white/15'
+        }`;
+        card.innerHTML = `
+          <div class="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center text-2xl shrink-0">${p.avatar}</div>
+          <div class="overflow-hidden">
+            <div class="font-bold text-sm text-white truncate flex items-center gap-1.5">
+              <span>${escapeHtml(p.name)}</span>
+              ${p.isHost ? '<i class="fa-solid fa-crown text-amber-300 text-xs" title="Host"></i>' : ''}
+            </div>
+            <div class="text-[11px] text-purple-300">
+              ${isMe ? 'Ty' : p.isBot ? 'Bot AI' : 'Gracz Online'}
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    /* ============================================================================
+       9. GAMEPLAY FLOW: QUESTIONS, TIMERS, SCORING & 5-STREAK POWERS
+       ============================================================================ */
+    function startNewQuestionRound(questionIndex) {
+      if (!hostRoom) return;
+      clearBotTimeouts();
+      Object.values(hostRoom.players).forEach((p) => {
+        p.lastAnswerIndex = -1; p.lastAnswerCorrect = false; p.lastPointsEarned = 0;
+      });
+      hostRoom.status = 'question';
+      hostRoom.currentQuestionIndex = questionIndex;
+      hostRoom.questionStartedAt = Date.now();
+      publishState();
+      scheduleBotsForCurrentQuestion();
+    }
+
+    function renderGameView(room) {
+      const me = room.players[myPlayerId] || {
+        name: myNickname || 'Gracz',
+        avatar: myAvatar,
+        score: 0,
+        streak: 0,
+        powersAvailable: 0
+      };
+
+      const qIdx = room.currentQuestionIndex || 0;
+      const currentQ = room.currentQuestion;
+      const streakTarget = room.streakTarget || 5;
+
+      // Update Top HUD
+      document.getElementById('hudMyAvatar').textContent = me.avatar;
+      document.getElementById('hudMyName').textContent = me.name;
+      document.getElementById('hudMyScore').textContent = me.score;
+      document.getElementById('hudCategoryBadge').textContent = currentQ.category || 'Quiz';
+      document.getElementById('hudQuestionIndex').textContent = qIdx + 1;
+      document.getElementById('hudQuestionTotal').textContent = room.totalQuestions;
+
+      // Update Streak Progress & Flame Icons
+      const currentStreakMod = me.streak % streakTarget;
+      const displayStreak = me.streak > 0 && currentStreakMod === 0 ? streakTarget : currentStreakMod;
+      document.getElementById('hudStreakText').textContent = `${me.streak} (Cel: ${streakTarget}🔥)`;
+
+      const flamesContainer = document.getElementById('hudFlameIcons');
+      flamesContainer.innerHTML = '';
+      for (let i = 0; i < streakTarget; i++) {
+        const isLit = i < displayStreak;
+        const span = document.createElement('span');
+        span.className = `text-lg sm:text-xl transition ${isLit ? 'flame-active opacity-100' : 'opacity-25 grayscale'}`;
+        span.textContent = '🔥';
+        flamesContainer.appendChild(span);
+      }
+
+      // Update Power-Up Button
+      const powerBtn = document.getElementById('openPowerModalBtn');
+      const roundPowerBtn = document.getElementById('roundSummaryPowerBtn');
+      document.getElementById('hudPowerCount').textContent = me.powersAvailable || 0;
+
+      const otherPlayersCount = Object.keys(room.players || {}).length - 1;
+      if ((me.powersAvailable || 0) > 0) {
+        powerBtn.disabled = false;
+        powerBtn.classList.add('power-ready-glow');
+        if (room.status === 'summary' && otherPlayersCount >= 0) {
+          roundPowerBtn.classList.remove('hidden');
+        } else {
+          roundPowerBtn.classList.add('hidden');
+        }
+      } else {
+        powerBtn.disabled = true;
+        powerBtn.classList.remove('power-ready-glow');
+        roundPowerBtn.classList.add('hidden');
+      }
+
+      // Answered Counter
+      const allPlayers = Object.values(room.players || {});
+      const activePlayers = allPlayers.filter((p) => !p.disconnected);
+      const answeredCount = activePlayers.filter((p) => p.lastAnswerIndex !== -1).length;
+      document.getElementById('hudAnsweredCounter').textContent = `${answeredCount} / ${activePlayers.length}`;
+
+      // Check if we switched to a new question
+      if (room.status === 'question' && renderedQuestionIndex !== qIdx) {
+        renderedQuestionIndex = qIdx;
+        hasAnsweredCurrentQuestion = me.lastAnswerIndex !== -1;
+        setupQuestionUI(currentQ, room);
+        startClientQuestionTimer(room);
+      }
+
+      // Sync Answer Buttons Visual State
+      const ansButtons = document.querySelectorAll('#answerButtonsGrid .ans-card');
+      if (room.status === 'question') {
+        document.getElementById('roundSummaryPanel').classList.add('hidden');
+        ansButtons.forEach((btn, idx) => {
+          btn.disabled = me.lastAnswerIndex !== -1 || hasAnsweredCurrentQuestion;
+          btn.classList.remove('ring-4', 'ring-white', 'opacity-35', 'scale-95');
+          if (me.lastAnswerIndex !== -1) {
+            if (idx === me.lastAnswerIndex) {
+              btn.classList.add('ring-4', 'ring-white');
+            } else {
+              btn.classList.add('opacity-35', 'scale-95');
+            }
+          }
+        });
+
+        const banner = document.getElementById('postAnswerBanner');
+        if (me.lastAnswerIndex !== -1) {
+          banner.classList.remove('hidden');
+          const textEl = document.getElementById('postAnswerText');
+          if (me.lastAnswerCorrect) {
+            textEl.innerHTML = `<span class="text-emerald-400">✅ Świetnie! +${me.lastPointsEarned} pkt (Passa: ${me.streak} 🔥)</span>`;
+          } else {
+            textEl.innerHTML = `<span class="text-rose-400">❌ Niestety błędna odpowiedź! Passa wyzerowana.</span>`;
+          }
+        } else {
+          banner.classList.add('hidden');
+        }
+
+        // Host auto-advances to Round Summary if everyone has answered
+        if (isRoomHost && activePlayers.length > 0 && answeredCount >= activePlayers.length) {
+          triggerRoundSummary();
+        }
+      } else if (room.status === 'summary') {
+        clearQuestionTimer();
+        document.getElementById('postAnswerBanner').classList.add('hidden');
+
+        // Highlight Correct vs Wrong Answers
+        ansButtons.forEach((btn, idx) => {
+          btn.disabled = true;
+          btn.classList.remove('opacity-35', 'ring-4', 'ring-white', 'ring-emerald-400');
+          if (idx === currentQ.correct) {
+            btn.classList.add('ring-4', 'ring-emerald-300');
+          } else {
+            btn.classList.add('opacity-35');
+          }
+        });
+
+        renderRoundSummaryPanel(room, currentQ);
+      }
+    }
+
+    function setupQuestionUI(currentQ, room) {
+      document.getElementById('questionTextDisplay').textContent = currentQ.question;
+      const ansButtons = document.querySelectorAll('#answerButtonsGrid .ans-card');
+      ansButtons.forEach((btn, idx) => {
+        const span = btn.querySelector('.ans-text');
+        span.textContent = currentQ.options[idx] || '';
+        btn.classList.toggle('hidden', idx >= currentQ.options.length);
+        btn.classList.toggle('md:col-span-2', currentQ.options.length === 3 && idx === 2);
+      });
+    }
+
+    function startClientQuestionTimer(room) {
+      clearQuestionTimer();
+      const totalSec = room.questionTime || 20;
+      const timerBar = document.getElementById('questionTimerBar');
+      const timerSecEl = document.getElementById('questionTimerSeconds');
+
+      questionInterval = setInterval(() => {
+        if (!currentRoomData || currentRoomData.status !== 'question') {
+          clearQuestionTimer();
+          return;
+        }
+        const elapsed = (Date.now() - (currentRoomData.localQuestionStart || Date.now())) / 1000;
+        const remaining = Math.max(0, totalSec - elapsed);
+        const pct = Math.max(0, (remaining / totalSec) * 100);
+
+        timerBar.style.width = `${pct}%`;
+        const ceilSec = Math.ceil(remaining);
+        if (timerSecEl.textContent !== String(ceilSec)) {
+          timerSecEl.textContent = String(ceilSec);
+          if (ceilSec <= 5 && ceilSec > 0) sfx.tick();
+        }
+
+        if (remaining <= 0) {
+          clearQuestionTimer();
+          if (isRoomHost) {
+            triggerRoundSummary();
+          }
+        }
+      }, 100);
+    }
+
+    function clearQuestionTimer() {
+      if (questionInterval) {
+        clearInterval(questionInterval);
+        questionInterval = null;
+      }
+    }
+
+    function submitPlayerAnswer(answerIdx) {
+      if (!currentRoomData || currentRoomData.status !== 'question' || hasAnsweredCurrentQuestion) return;
+      const me = currentRoomData.players[myPlayerId];
+      if (!me || me.lastAnswerIndex !== -1) return;
+      hasAnsweredCurrentQuestion = true;
+      document.querySelectorAll('#answerButtonsGrid .ans-card').forEach((b) => { b.disabled = true; });
+      if (isRoomHost) hostProcessAnswer(myPlayerId, answerIdx);
+      else sendToHost({ type: 'answer', idx: answerIdx });
+    }
+
+    // Całe liczenie punktów dzieje się u Hosta
+    function hostProcessAnswer(playerId, answerIdx) {
+      if (!hostRoom || hostRoom.status !== 'question') return;
+      const p = hostRoom.players[playerId];
+      if (!p || p.lastAnswerIndex !== -1) return;
+      const currentQ = hostRoom.questions[hostRoom.currentQuestionIndex || 0];
+      if (!Number.isInteger(answerIdx) || answerIdx < 0 || answerIdx >= currentQ.options.length) return;
+      const totalSec = hostRoom.questionTime || 20;
+      const elapsedSec = Math.max(0, (Date.now() - hostRoom.questionStartedAt) / 1000);
+      if (elapsedSec > totalSec + 1.5) return;
+      const speedRatio = Math.max(0, Math.min(1, 1 - elapsedSec / totalSec));
+      const streakTarget = hostRoom.streakTarget || 5;
+
+      if (answerIdx === currentQ.correct) {
+        p.streak = (p.streak || 0) + 1;
+        if (p.streak > (p.maxStreak || 0)) p.maxStreak = p.streak;
+        const pts = Math.round(500 + 500 * speedRatio + Math.min(250, p.streak * 30));
+        p.score = (p.score || 0) + pts;
+        p.lastPointsEarned = pts;
+        p.lastAnswerCorrect = true;
+        if (p.streak % streakTarget === 0) p.powersAvailable = (p.powersAvailable || 0) + 1;
+      } else {
+        p.streak = 0; p.lastPointsEarned = 0; p.lastAnswerCorrect = false;
+      }
+      p.lastAnswerIndex = answerIdx;
+      publishState();
+    }
+
+    function triggerRoundSummary() {
+      if (!hostRoom || hostRoom.status !== 'question') return;
+      clearQuestionTimer();
+      clearBotTimeouts();
+      Object.values(hostRoom.players).forEach((p) => {
+        if (p.lastAnswerIndex === -1) { p.streak = 0; p.lastAnswerCorrect = false; p.lastPointsEarned = 0; }
+      });
+      hostRoom.status = 'summary';
+      publishState();
+    }
+
+    function renderRoundSummaryPanel(room, currentQ) {
+      const panel = document.getElementById('roundSummaryPanel');
+      panel.classList.remove('hidden');
+
+      const correctText = currentQ.options[currentQ.correct];
+      document.getElementById('roundCorrectAnswerLabel').textContent = `Poprawna odpowiedź: ${correctText}`;
+
+      const nextBtn = document.getElementById('nextQuestionHostBtn');
+      if (isRoomHost) {
+        nextBtn.classList.remove('hidden');
+        const isLast = (room.currentQuestionIndex || 0) >= (room.totalQuestions - 1);
+        nextBtn.innerHTML = isLast
+          ? `<span>ZOBACZ PODIUM ZWYCIĘZCÓW</span><i class="fa-solid fa-trophy"></i>`
+          : `<span>NASTĘPNE PYTANIE</span><i class="fa-solid fa-forward-step"></i>`;
+      } else {
+        nextBtn.classList.add('hidden');
+      }
+
+      // Render Sorted Live Leaderboard
+      const sortedPlayers = Object.values(room.players || {}).sort((a, b) => b.score - a.score);
+      const listEl = document.getElementById('roundLeaderboardList');
+      listEl.innerHTML = '';
+
+      sortedPlayers.forEach((p, index) => {
+        const isMe = p.id === myPlayerId;
+        const row = document.createElement('div');
+        row.className = `flex items-center justify-between px-4 py-2.5 rounded-2xl border ${
+          isMe
+            ? 'bg-amber-400/20 border-amber-400'
+            : 'bg-black/40 border-white/10'
+        }`;
+
+        const rankBadge = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+        row.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="font-display font-bold text-lg w-7 text-center">${rankBadge}</span>
+            <span class="text-2xl">${p.avatar}</span>
+            <div>
+              <div class="font-bold text-sm text-white flex items-center gap-2">
+                <span>${escapeHtml(p.name)}</span>
+                ${isMe ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-400 text-gray-950 font-extrabold">TY</span>' : ''}
+              </div>
+              <div class="text-xs ${p.lastAnswerCorrect ? 'text-emerald-400' : 'text-rose-400'}">
+                ${p.lastAnswerCorrect ? `+${p.lastPointsEarned} pkt w tej rundzie` : 'Brak punktów w tej rundzie'}
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <div class="text-xs font-bold px-2.5 py-1 rounded-xl bg-white/10 text-amber-300">
+              🔥 Passa: ${p.streak || 0}
+            </div>
+            <div class="font-display text-xl font-bold text-white min-w-[80px] text-right">
+              ${p.score} <span class="text-xs text-purple-300 font-sans">pkt</span>
+            </div>
+          </div>
+        `;
+        listEl.appendChild(row);
+      });
+    }
+
+    /* ============================================================================
+       10. AI BOT SIMULATION (ANSWERING & USING POWERS)
+       ============================================================================ */
+    function clearBotTimeouts() {
+      botSimulationTimeouts.forEach((t) => clearTimeout(t));
+      botSimulationTimeouts = [];
+    }
+
+    function scheduleBotsForCurrentQuestion() {
+      if (!hostRoom || !isRoomHost) return;
+      const bots = Object.values(hostRoom.players || {}).filter((p) => p.isBot);
+      const totalSec = hostRoom.questionTime || 20;
+      const streakTarget = hostRoom.streakTarget || 5;
+      const questions = hostRoom.questions || HARDCODED_QUESTIONS;
+      const currentQ = questions[hostRoom.currentQuestionIndex || 0];
+
+      bots.forEach((bot) => {
+        const delayMs = Math.floor((2 + Math.random() * (totalSec * 0.65)) * 1000);
+        const timerId = setTimeout(async () => {
+          if (!hostRoom || hostRoom.status !== 'question') return;
+          const b = hostRoom.players[bot.id];
+          if (!b || b.lastAnswerIndex !== -1) return;
+
+          // Bots have ~75% accuracy so they can build streaks and test Power combat
+          const willBeCorrect = Math.random() < 0.75;
+          let chosenIdx = currentQ.correct;
+          if (!willBeCorrect) {
+            const wrongOpts = currentQ.options.map((_, i) => i).filter((i) => i !== currentQ.correct);
+            chosenIdx = wrongOpts[Math.floor(Math.random() * wrongOpts.length)];
+          }
+
+          const elapsedSec = delayMs / 1000;
+          const speedRatio = Math.max(0, Math.min(1, 1 - elapsedSec / totalSec));
+
+          if (chosenIdx === currentQ.correct) {
+            b.streak = (b.streak || 0) + 1;
+            if (b.streak > (b.maxStreak || 0)) b.maxStreak = b.streak;
+            const pts = Math.round(500 + 500 * speedRatio + Math.min(250, b.streak * 30));
+            b.score = (b.score || 0) + pts;
+            b.lastPointsEarned = pts;
+            b.lastAnswerCorrect = true;
+
+            if (b.streak > 0 && b.streak % streakTarget === 0) {
+              b.powersAvailable = (b.powersAvailable || 0) + 1;
+              // Bot automatically uses its earned Power against the current leader after 1.5s!
+              setTimeout(() => botExecutePowerAttack(b.id), 1400);
+            }
+          } else {
+            b.streak = 0;
+            b.lastPointsEarned = 0;
+            b.lastAnswerCorrect = false;
+          }
+
+          b.lastAnswerIndex = chosenIdx;
+          publishState();
+        }, delayMs);
+
+        botSimulationTimeouts.push(timerId);
+      });
+    }
+
+    async function botExecutePowerAttack(botId) {
+      if (!hostRoom || !isRoomHost) return;
+      const bot = hostRoom.players[botId];
+      if (!bot || (bot.powersAvailable || 0) <= 0) return;
+
+      const rivals = Object.values(hostRoom.players).filter((p) => p.id !== botId);
+      if (rivals.length === 0) return;
+      rivals.sort((a, b) => b.score - a.score);
+      const target = rivals[0]; // Bot targets the top-scoring opponent!
+
+      const botPowerChoices = ['sabotage', 'vampire', 'freeze'];
+      const chosenPower = botPowerChoices[Math.floor(Math.random() * botPowerChoices.length)];
+      await applyPowerEffectInRoom(bot.id, target.id, chosenPower);
+    }
+
+    /* ============================================================================
+       11. POWER-UP COMBAT SYSTEM (SABOTAŻ, WAMPIR, LODOWY POCISK, MEGA BOOST)
+       ============================================================================ */
+    function openPowerCombatModal() {
+      if (!currentRoomData) return;
+      const me = currentRoomData.players[myPlayerId];
+      if (!me || (me.powersAvailable || 0) <= 0) return;
+
+      sfx.click();
+      const modal = document.getElementById('powerCombatModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      renderPowerModalTargets();
+    }
+
+    function closePowerCombatModal() {
+      const modal = document.getElementById('powerCombatModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function renderPowerModalTargets() {
+      if (!currentRoomData) return;
+      const powerDef = POWER_DEFINITIONS[selectedPowerKey];
+      const targetSection = document.getElementById('targetSelectionSection');
+
+      // Highlight selected power card
+      document.querySelectorAll('.power-choice-btn').forEach((btn) => {
+        const key = btn.getAttribute('data-power');
+        if (key === selectedPowerKey) {
+          btn.className = 'power-choice-btn text-left p-3.5 rounded-2xl border-2 border-amber-400 bg-amber-400/20 transition flex items-start gap-3 shadow-lg';
+        } else {
+          btn.className = 'power-choice-btn text-left p-3.5 rounded-2xl border-2 border-white/15 bg-black/30 hover:border-purple-400 transition flex items-start gap-3';
+        }
+      });
+
+      if (!powerDef.needsTarget) {
+        targetSection.classList.add('hidden');
+        selectedTargetPlayerId = myPlayerId;
+        return;
+      }
+
+      targetSection.classList.remove('hidden');
+      const opponents = Object.values(currentRoomData.players || {})
+        .filter((p) => p.id !== myPlayerId)
+        .sort((a, b) => b.score - a.score);
+
+      const listEl = document.getElementById('powerTargetPlayersList');
+      listEl.innerHTML = '';
+
+      if (opponents.length === 0) {
+        listEl.innerHTML = `
+          <div class="col-span-2 bg-black/40 border border-white/10 rounded-2xl p-4 text-center text-xs text-purple-200">
+            Brak innych graczy w pokoju. Wybierz <b>⚡ Złoty Mega Boost (+350 pkt)</b> lub dodaj Bota w poczekalni!
+          </div>
+        `;
+        selectedTargetPlayerId = null;
+        return;
+      }
+
+      if (!selectedTargetPlayerId || !opponents.some((o) => o.id === selectedTargetPlayerId)) {
+        selectedTargetPlayerId = opponents[0].id;
+      }
+
+      opponents.forEach((opp, idx) => {
+        const isSelected = opp.id === selectedTargetPlayerId;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `p-3 rounded-2xl border-2 text-left flex items-center justify-between transition ${
+          isSelected
+            ? 'bg-rose-500/25 border-rose-400 shadow-md'
+            : 'bg-black/40 border-white/10 hover:border-white/30'
+        }`;
+        btn.innerHTML = `
+          <div class="flex items-center gap-2.5 overflow-hidden">
+            <span class="text-2xl">${opp.avatar}</span>
+            <div class="truncate">
+              <div class="font-bold text-sm text-white truncate">
+                ${idx === 0 ? '👑 ' : ''}${escapeHtml(opp.name)}
+              </div>
+              <div class="text-[11px] text-amber-300 font-semibold">
+                ${opp.score} pkt • Passa: ${opp.streak || 0}🔥
+              </div>
+            </div>
+          </div>
+          <div class="w-7 h-7 rounded-full flex items-center justify-center ${isSelected ? 'bg-rose-500 text-white' : 'bg-white/10 text-purple-300'}">
+            <i class="fa-solid fa-crosshairs text-xs"></i>
+          </div>
+        `;
+        btn.onclick = () => {
+          sfx.click();
+          selectedTargetPlayerId = opp.id;
+          renderPowerModalTargets();
+        };
+        listEl.appendChild(btn);
+      });
+    }
+
+    async function handleExecutePowerAttack() {
+      if (!currentRoomData) return;
+      const powerDef = POWER_DEFINITIONS[selectedPowerKey];
+      if (powerDef.needsTarget && !selectedTargetPlayerId) {
+        showToastBanner(`<span class="text-2xl">🎯</span><span>Wybierz rywala z listy lub użyj Złotego Mega Boosta!</span>`, 'border-rose-400');
+        return;
+      }
+
+      closePowerCombatModal();
+      if (isRoomHost) applyPowerEffectInRoom(myPlayerId, selectedTargetPlayerId, selectedPowerKey);
+      else sendToHost({ type: 'power', powerKey: selectedPowerKey, targetId: selectedTargetPlayerId });
+    }
+
+    function applyPowerEffectInRoom(attackerId, targetId, powerKey) {
+      if (!hostRoom) return;
+      const attacker = hostRoom.players[attackerId];
+      if (!attacker || (attacker.powersAvailable || 0) <= 0) return;
+
+      const pd = POWER_DEFINITIONS[powerKey];
+      if (!pd) return;
+      if (pd.needsTarget && (!targetId || targetId === attackerId || !hostRoom.players[targetId])) return;
+      const target = targetId ? hostRoom.players[targetId] : attacker;
+      let logSummary = '';
+      let shortVictimText = '';
+
+      attacker.powersAvailable -= 1;
+      attacker.powersUsed = (attacker.powersUsed || 0) + 1;
+
+      if (powerKey === 'sabotage' && target) {
+        const deducted = Math.min(target.score || 0, 400);
+        target.score = Math.max(0, (target.score || 0) - 400);
+        logSummary = `💥 <b>${escapeHtml(attacker.name)}</b> użył <b>Sabotażu Punktowego</b> na graczu <b>${escapeHtml(target.name)}</b> (-${deducted} pkt)!`;
+        shortVictimText = `${attacker.avatar} ${attacker.name} użył Sabotażu i odebrał Ci ${deducted} punktów!`;
+      } else if (powerKey === 'vampire' && target) {
+        const stolen = Math.min(target.score || 0, 250);
+        target.score = Math.max(0, (target.score || 0) - stolen);
+        attacker.score = (attacker.score || 0) + 250;
+        logSummary = `🧛 <b>${escapeHtml(attacker.name)}</b> wyssał <b>Wampirem Punktów</b> ${stolen} pkt od gracza <b>${escapeHtml(target.name)}</b> (+250 pkt)!`;
+        shortVictimText = `${attacker.avatar} ${attacker.name} użył Wampira Punktów i wyssał od Ciebie ${stolen} pkt!`;
+      } else if (powerKey === 'freeze' && target) {
+        const deducted = Math.min(target.score || 0, 200);
+        target.score = Math.max(0, (target.score || 0) - 200);
+        target.streak = 0;
+        logSummary = `❄️ <b>${escapeHtml(attacker.name)}</b> zamroził <b>Lodowym Pociskiem</b> gracza <b>${escapeHtml(target.name)}</b> (-${deducted} pkt & reset Passy)!`;
+        shortVictimText = `${attacker.avatar} ${attacker.name} zamroził Twoją Passę do 0 i zabrał ${deducted} pkt!`;
+      } else {
+        attacker.score = (attacker.score || 0) + 350;
+        logSummary = `⚡ <b>${escapeHtml(attacker.name)}</b> odpalił <b>Złoty Mega Boost</b> (+350 pkt)!`;
+      }
+
+      const combatEvent = {
+        id: 'combat_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+        attackerId,
+        targetId: powerKey === 'boost' ? null : targetId,
+        powerKey,
+        logSummary,
+        shortVictimText,
+        timestamp: Date.now()
+      };
+
+      if (!hostRoom.combatLogs) hostRoom.combatLogs = [];
+      hostRoom.combatLogs.push(combatEvent);
+
+      publishState();
+    }
+
+    function processIncomingCombatEvents(combatLogs) {
+      combatLogs.forEach((ev) => {
+        if (processedCombatIds.has(ev.id)) return;
+        processedCombatIds.add(ev.id);
+
+        // Broadcast banner to everyone
+        showToastBanner(
+          `<div class="flex items-center gap-2"><span class="text-2xl">${POWER_DEFINITIONS[ev.powerKey]?.icon || '⚡'}</span><span>${ev.logSummary}</span></div>`,
+          ev.targetId === myPlayerId ? 'border-red-500' : 'border-amber-400'
+        );
+
+        if (ev.targetId === myPlayerId) {
+          // Dramatic Screen Shake & Red Flash when YOU get attacked!
+          sfx.gotHit();
+          triggerVictimHitAnimation(ev);
+        } else {
+          sfx.attackLaunch();
+        }
+      });
+    }
+
+    function triggerVictimHitAnimation(ev) {
+      const overlay = document.getElementById('hitFlashOverlay');
+      const iconEl = document.getElementById('hitOverlayIcon');
+      const descEl = document.getElementById('hitOverlayDesc');
+      const mainContainer = document.getElementById('mainAppContainer');
+
+      iconEl.textContent = POWER_DEFINITIONS[ev.powerKey]?.icon || '💥';
+      descEl.textContent = ev.shortVictimText || 'Rywal obniżył Twoje punkty Powerem!';
+
+      overlay.classList.remove('opacity-0');
+      overlay.classList.add('opacity-100');
+      mainContainer.classList.add('animate-hit-shake');
+
+      setTimeout(() => {
+        overlay.classList.remove('opacity-100');
+        overlay.classList.add('opacity-0');
+        mainContainer.classList.remove('animate-hit-shake');
+      }, 2100);
+    }
+
+    /* ============================================================================
+       12. FINAL PODIUM & CONFETTI CELEBRATION
+       ============================================================================ */
+    function renderPodiumView(room) {
+      if (!podiumShown) { sfx.fanfare(); startConfettiCelebration(); }
+
+      const sorted = Object.values(room.players || {}).sort((a, b) => b.score - a.score);
+      const podiumStage = document.getElementById('podiumStage');
+      podiumStage.innerHTML = '';
+
+      // Order on visual stage: 2nd (Left), 1st (Center), 3rd (Right)
+      const places = [
+        { player: sorted[1], rank: 2, height: 'h-36 sm:h-44', color: 'from-slate-300 to-slate-500', medal: '🥈' },
+        { player: sorted[0], rank: 1, height: 'h-48 sm:h-60', color: 'from-amber-300 via-yellow-400 to-amber-600', medal: '👑' },
+        { player: sorted[2], rank: 3, height: 'h-28 sm:h-36', color: 'from-amber-600 to-amber-800', medal: '🥉' }
+      ];
+
+      places.forEach((slot) => {
+        const col = document.createElement('div');
+        col.className = 'flex flex-col items-center';
+        if (!slot.player) {
+          col.innerHTML = `<div class="w-full ${slot.height} rounded-t-3xl bg-white/5 border-t border-x border-white/10 opacity-30"></div>`;
+        } else {
+          col.innerHTML = `
+            <div class="text-3xl sm:text-4xl mb-1 animate-bounce">${slot.medal}</div>
+            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-purple-900 border-2 border-white/30 flex items-center justify-center text-3xl shadow-xl mb-2">
+              ${slot.player.avatar}
+            </div>
+            <div class="font-display font-bold text-sm sm:text-base text-white truncate max-w-[110px] sm:max-w-[150px]">
+              ${escapeHtml(slot.player.name)}
+            </div>
+            <div class="font-display font-bold text-amber-300 text-xs sm:text-sm mb-3">
+              ${slot.player.score} pkt
+            </div>
+            <div class="w-full ${slot.height} rounded-t-3xl bg-gradient-to-b ${slot.color} flex flex-col items-center justify-start pt-4 shadow-2xl border-t-2 border-white/50">
+              <span class="font-display text-3xl sm:text-5xl font-bold text-gray-950 drop-shadow">${slot.rank}</span>
+            </div>
+          `;
+        }
+        podiumStage.appendChild(col);
+      });
+
+      // Special Awards
+      const topWinner = sorted[0];
+      const topAttacker = [...sorted].sort((a, b) => (b.powersUsed || 0) - (a.powersUsed || 0))[0];
+      const topStreaker = [...sorted].sort((a, b) => (b.maxStreak || 0) - (a.maxStreak || 0))[0];
+
+      const awardsGrid = document.getElementById('podiumAwardsGrid');
+      awardsGrid.innerHTML = `
+        <div class="bg-amber-400/15 border border-amber-400/40 rounded-2xl p-4 flex items-center gap-3.5">
+          <div class="text-3xl">🏆</div>
+          <div>
+            <div class="text-[11px] font-bold uppercase text-amber-300">Mistrz QuizArena</div>
+            <div class="font-display text-lg font-bold text-white">${topWinner ? escapeHtml(topWinner.name) : '-'}</div>
+            <div class="text-xs text-purple-200">${topWinner ? topWinner.score + ' punktów' : ''}</div>
+          </div>
+        </div>
+        <div class="bg-rose-500/15 border border-rose-400/40 rounded-2xl p-4 flex items-center gap-3.5">
+          <div class="text-3xl">💥</div>
+          <div>
+            <div class="text-[11px] font-bold uppercase text-rose-300">Największy Sabotażysta</div>
+            <div class="font-display text-lg font-bold text-white">${topAttacker ? escapeHtml(topAttacker.name) : '-'}</div>
+            <div class="text-xs text-purple-200">Użyte Powery: ${topAttacker ? (topAttacker.powersUsed || 0) : 0}</div>
+          </div>
+        </div>
+        <div class="bg-orange-500/15 border border-orange-400/40 rounded-2xl p-4 flex items-center gap-3.5">
+          <div class="text-3xl">🔥</div>
+          <div>
+            <div class="text-[11px] font-bold uppercase text-orange-300">Król Passy</div>
+            <div class="font-display text-lg font-bold text-white">${topStreaker ? escapeHtml(topStreaker.name) : '-'}</div>
+            <div class="text-xs text-purple-200">Najdłuższa seria: ${topStreaker ? (topStreaker.maxStreak || 0) : 0} z rzędu</div>
+          </div>
+        </div>
+      `;
+
+      // Full Scoreboard Table
+      const listEl = document.getElementById('finalScoreboardList');
+      listEl.innerHTML = '';
+      sorted.forEach((p, idx) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between bg-white/5 px-4 py-2.5 rounded-xl border border-white/10';
+        div.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="font-display font-bold text-purple-300 w-6">#${idx + 1}</span>
+            <span class="text-xl">${p.avatar}</span>
+            <span class="font-bold text-white text-sm">${escapeHtml(p.name)}</span>
+          </div>
+          <div class="flex items-center gap-4 text-xs sm:text-sm">
+            <span class="text-amber-300">Max Passa: <b>${p.maxStreak || 0}🔥</b></span>
+            <span class="text-rose-300 hidden sm:inline">Powery: <b>${p.powersUsed || 0}⚡</b></span>
+            <span class="font-display text-lg font-bold text-white">${p.score} pkt</span>
+          </div>
+        `;
+        listEl.appendChild(div);
+      });
+
+      document.getElementById('playAgainHostBtn').classList.toggle('hidden', !isRoomHost);
+    }
+
+    function startConfettiCelebration() {
+      const canvas = document.getElementById('confettiCanvas');
+      canvas.classList.remove('hidden');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const pieces = Array.from({ length: 110 }).map(() => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        w: 8 + Math.random() * 8,
+        h: 6 + Math.random() * 6,
+        color: ['#fbbf24', '#f43f5e', '#a855f7', '#38bdf8', '#4ade80'][Math.floor(Math.random() * 5)],
+        vy: 2.5 + Math.random() * 3.5,
+        vx: -1.5 + Math.random() * 3,
+        rot: Math.random() * 360
+      }));
+
+      let frames = 0;
+      function draw() {
+        if (frames++ > 280) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          canvas.classList.add('hidden');
+          return;
+        }
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach((p) => {
+          p.y += p.vy;
+          p.x += p.vx;
+          p.rot += 4;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rot * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          ctx.restore();
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    /* ============================================================================
+       14. HELPERS & EVENT LISTENERS
+       ============================================================================ */
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function copyPinToClipboard(pinText) {
+      if (!pinText) return;
+      const temp = document.createElement('input');
+      temp.value = pinText;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      temp.remove();
+      showToastBanner(`<span class="text-xl">📋</span><span>Skopiowano kod PIN: <b>${pinText}</b></span>`, 'border-amber-400');
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      renderAvatarPicker();
+      updateQuestionCountBadge();
+      try { firebaseReady = await initFirebase(); } catch (e) { console.error('Firebase:', e); firebaseReady = false; }
+      if (!firebaseReady) firebaseMissingToast();
+
+      // Sound Toggle
+      document.getElementById('soundToggleBtn').onclick = () => {
+        sfx.enabled = !sfx.enabled;
+        const icon = document.getElementById('soundIcon');
+        icon.className = sfx.enabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark text-rose-400';
+      };
+
+      // Home Buttons
+      document.getElementById('createRoomBtn').onclick = handleCreateRoom;
+      document.getElementById('joinRoomBtn').onclick = handleJoinRoom;
+      document.getElementById('joinPinInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleJoinRoom();
+      });
+
+      // Copy PIN Buttons
+      document.getElementById('copyPinLobbyBtn').onclick = () => copyPinToClipboard(currentRoomPin);
+      document.getElementById('headerCopyPinBtn').onclick = () => copyPinToClipboard(currentRoomPin);
+
+      // Lobby Settings Changes (Host)
+      document.getElementById('streakTargetSelect').onchange = (e) => {
+        if (!hostRoom) return;
+        hostRoom.streakTarget = parseInt(e.target.value, 10) || 5;
+        publishState();
+      };
+      document.getElementById('questionTimeSelect').onchange = (e) => {
+        if (!hostRoom) return;
+        hostRoom.questionTime = parseInt(e.target.value, 10) || 20;
+        publishState();
+      };
+      document.getElementById('addBotBtn').onclick = handleAddBot;
+      document.getElementById('leaveLobbyBtn').onclick = leaveRoom;
+      document.getElementById('brandLogoBtn').onclick = leaveRoom;
+
+      // Start Quiz from Lobby
+      document.getElementById('startGameBtn').onclick = () => {
+        if (!hostRoom) return;
+        sfx.click();
+        startNewQuestionRound(0);
+      };
+
+      // Answer Buttons Click
+      document.querySelectorAll('#answerButtonsGrid .ans-card').forEach((btn) => {
+        btn.onclick = () => {
+          const idx = parseInt(btn.getAttribute('data-index'), 10);
+          submitPlayerAnswer(idx);
+        };
+      });
+
+      // Next Question Button (Host)
+      document.getElementById('nextQuestionHostBtn').onclick = () => {
+        if (!hostRoom) return;
+        sfx.click();
+        const nextIdx = (hostRoom.currentQuestionIndex || 0) + 1;
+        if (nextIdx >= hostRoom.questions.length) {
+          hostRoom.status = 'finished';
+          publishState();
+        } else {
+          startNewQuestionRound(nextIdx);
+        }
+      };
+
+      // Power-Up Combat Modal Controls
+      document.getElementById('openPowerModalBtn').onclick = openPowerCombatModal;
+      document.getElementById('roundSummaryPowerBtn').onclick = openPowerCombatModal;
+      document.getElementById('closePowerModalBtn').onclick = closePowerCombatModal;
+
+      document.querySelectorAll('.power-choice-btn').forEach((btn) => {
+        btn.onclick = () => {
+          sfx.click();
+          selectedPowerKey = btn.getAttribute('data-power');
+          renderPowerModalTargets();
+        };
+      });
+
+      document.getElementById('executePowerAttackBtn').onclick = handleExecutePowerAttack;
+
+      // Play Again from Podium
+      document.getElementById('playAgainHostBtn').onclick = () => {
+        if (!hostRoom) return;
+        sfx.click();
+        Object.values(hostRoom.players).forEach((p) => {
+          p.score = 0; p.streak = 0; p.maxStreak = 0; p.powersAvailable = 0; p.powersUsed = 0;
+          p.lastAnswerIndex = -1; p.lastAnswerCorrect = false; p.lastPointsEarned = 0;
+        });
+        hostRoom.status = 'lobby';
+        hostRoom.currentQuestionIndex = 0;
+        hostRoom.combatLogs = [];
+        publishState();
+      };
+      document.getElementById('backToHomeFromPodiumBtn').onclick = leaveRoom;
+    });
+  </script>
+</body>
+</html>
