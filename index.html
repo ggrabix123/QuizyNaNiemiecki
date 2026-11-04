@@ -732,12 +732,12 @@
        (Firebase Console → Ustawienia projektu → Twoje aplikacje → SDK)
        ============================================================ */
     const FIREBASE_CONFIG = {
-      apiKey: "AIzaSyAraHTxnw9nB2nBrK77my2W7eNGsbaTKJo",
-      authDomain: "naniemiecki.firebaseapp.com",
-      projectId: "naniemiecki",
-      storageBucket: "naniemiecki.firebasestorage.app",
-      messagingSenderId: "9020338678",
-      appId: "1:9020338678:web:2b290d7731a23dd08bd7d7"
+      apiKey: "WKLEJ_API_KEY",
+      authDomain: "WKLEJ.firebaseapp.com",
+      projectId: "WKLEJ_PROJECT_ID",
+      storageBucket: "WKLEJ.firebasestorage.app",
+      messagingSenderId: "WKLEJ",
+      appId: "WKLEJ_APP_ID"
     };
 
     /* ============================================================================
@@ -747,84 +747,207 @@
        ============================================================================ */
     /*__HARDCODED_QUESTIONS_START__*/
     let HARDCODED_QUESTIONS = [
-      {
-        category: "Wprowadzenie & Technologia",
-        question: "Który protokół odpowiada za bezpieczne, szyfrowane połączenie ze stronami internetowymi?",
-        options: ["HTTP", "HTTPS", "FTP", "SMTP"],
-        correct: 1
-      },
-      {
-        category: "Cyberbezpieczeństwo",
-        question: "Jak nazywa się atak polegający na podszywaniu się pod zaufaną instytucję w celu wyłudzenia haseł?",
-        options: ["Phishing", "Overclocking", "Rendering", "Refactoring"],
-        correct: 0
-      },
-      {
-        category: "Programowanie & GitHub",
-        question: "Która komenda systemu Git służy do wysłania lokalnych zmian (commitów) na zdalne repozytorium GitHub?",
-        options: ["git clone", "git pull", "git push", "git checkout"],
-        correct: 2
-      },
-      {
-        category: "Sztuczna Inteligencja",
-        question: "Co oznacza skrót LLM w kontekście nowoczesnych modeli sztucznej inteligencji?",
-        options: ["Large Language Model", "Linear Logic Machine", "Local Link Module", "Low Latency Memory"],
-        correct: 0
-      },
-      {
-        category: "Web Development",
-        question: "Który język odpowiada bezpośrednio za interaktywność i logikę po stronie przeglądarki użytkownika?",
-        options: ["HTML5", "CSS3", "JavaScript", "SQL"],
-        correct: 2
-      },
-      {
-        category: "Architektura Systemów",
-        question: "Jaką nazwę nosi darmowa usługa hostowania statycznych stron WWW bezpośrednio z repozytorium GitHub?",
-        options: ["GitHub Cloud", "GitHub Pages", "GitHub Server", "GitHub Docker"],
-        correct: 1
-      },
-      {
-        category: "Bazy Danych",
-        question: "Która baza danych od Google pozwala na synchronizację danych w czasie rzeczywistym (NoSQL)?",
-        options: ["PostgreSQL", "SQLite", "Cloud Firestore", "MariaDB"],
-        correct: 2
-      },
-      {
-        category: "Sieci Komputerowe",
-        question: "Jaki system tłumaczy przyjazne nazwy domenowe (np. github.com) na adresy IP serwerów?",
-        options: ["DNS", "DHCP", "VPN", "SSH"],
-        correct: 0
-      },
-      {
-        category: "Projektowanie UI/UX",
-        question: "Co oznacza podejście 'Mobile-First' podczas tworzenia nowoczesnych aplikacji webowych?",
-        options: [
-          "Tworzenie wyłącznie aplikacji na iOS",
-          "Projektowanie interfejsu najpierw dla ekranów mobilnych, a potem większych",
-          "Blokowanie dostępu z komputerów stacjonarnych",
-          "Brak użycia arkuszy stylów CSS"
-        ],
-        correct: 1
-      },
-      {
-        category: "Algorytmy & Struktury",
-        question: "Która struktura danych działa zgodnie z zasadą LIFO (Last In, First Out - ostatni wchodzący wychodzi pierwszy)?",
-        options: ["Kolejka (Queue)", "Stos (Stack)", "Drzewo binarne", "Graf nieskierowany"],
-        correct: 1
-      },
-      {
-        category: "Chmura Obliczeniowa",
-        question: "Który format tekstowy jest obecnie najpopularniejszym standardem wymiany danych w REST API?",
-        options: ["CSV", "INI", "JSON", "BMP"],
-        correct: 2
-      },
-      {
-        category: "Finał Prezentacji",
-        question: "Ile poprawnych odpowiedzi z rzędu (Passa) daje Ci potężnego Powera w domyślnym trybie naszej gry?",
-        options: ["Tylko 1 odpowiedź", "Dokładnie 5 poprawnych odpowiedzi z rzędu!", "20 odpowiedzi", "Powery są niedostępne"],
-        correct: 1
-      }
-    ];
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Co oznacza po niemiecku słowo \"obdachlos\"?",
+    "options": [
+      "Bezrobotny",
+      "Bezdomny",
+      "Niepełnosprawny"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Jak przetłumaczysz na język niemiecki rzeczownik \"bieda\"?",
+    "options": [
+      "die Armut",
+      "die Sucht",
+      "die Gewalt"
+    ],
+    "correct": 0
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Słowo \"arbeitslos\" opisuje osobę, która:",
+    "options": [
+      "Żyje na ulicy",
+      "Straciła pracę i szuka zatrudnienia",
+      "Porusza się na wózku"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Co znaczy wyrażenie \"im Rollstuhl sitzen\"?",
+    "options": [
+      "Poruszać się na wózku",
+      "Żyć na ulicy",
+      "Szukać pracy"
+    ],
+    "correct": 0
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Jakie słowo w języku niemieckim oznacza \"uzależnienie\"?",
+    "options": [
+      "die Armut",
+      "die Behinderung",
+      "die Sucht"
+    ],
+    "correct": 2
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Jak przetłumaczysz słowo \"die Obdachlosigkeit\"?",
+    "options": [
+      "Bezrobocie",
+      "Bezdomność",
+      "Przemoc"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Co oznacza przymiotnik \"behindert\"?",
+    "options": [
+      "Biedny",
+      "Niepełnosprawny",
+      "Uzależniony od alkoholu"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Jak na niemiecki przetłumaczyć pojęcie \"przestępczość\"?",
+    "options": [
+      "die Kriminalität",
+      "die Diskriminierung",
+      "die Umwelt"
+    ],
+    "correct": 0
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Słowo \"die Gewalt\" oznacza po polsku:",
+    "options": [
+      "Pomoc",
+      "Przemoc",
+      "Zaangażowanie"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Jak po niemiecku określisz \"środowisko naturalne\"?",
+    "options": [
+      "die Hilfe",
+      "das Engagement",
+      "die Umwelt"
+    ],
+    "correct": 2
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Co oznacza zwrot \"herrenlose Tiere\"?",
+    "options": [
+      "Głodujący ludzie",
+      "Bezpańskie zwierzęta",
+      "Ofiary przemocy"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Wyrażenie \"Menschen in Not\" przetłumaczysz jako:",
+    "options": [
+      "Ludzie w potrzebie",
+      "Osoby bez pracy",
+      "Chorzy i niepełnosprawni"
+    ],
+    "correct": 0
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Jak przetłumaczysz zwrot \"Gewaltopfer\"?",
+    "options": [
+      "Ofiary przemocy",
+      "Ubogie dzieci",
+      "Uzależnieni od narkotyków"
+    ],
+    "correct": 0
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Co oznacza rzeczownik \"das Engagement\"?",
+    "options": [
+      "Zaangażowanie",
+      "Bezrobocie",
+      "Dyskryminacja"
+    ],
+    "correct": 0
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Wyrażenie \"die Stelle verlieren\" oznacza:",
+    "options": [
+      "Zgubić pieniądze",
+      "Stracić pracę",
+      "Zmienić miejsce zamieszkania"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Jak zapytasz kolegę po niemiecku \"Jaki jest Twój problem społeczny?\"",
+    "options": [
+      "Was ist dein soziales Problem?",
+      "Wo arbeitest du?",
+      "Wie geht es dir?"
+    ],
+    "correct": 0
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Wyrażenie \"alltägliche Hilfe\" przetłumaczysz jako:",
+    "options": [
+      "Pomoc finansowa",
+      "Codzienna pomoc",
+      "Rzadka pomoc"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Co oznacza zwrot \"Senkung der Kriminalität\"?",
+    "options": [
+      "Zwiększenie przestępczości",
+      "Obniżenie przestępczości",
+      "Spadek ubóstwa"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Jakie słowo oznacza \"dyskryminacja\"?",
+    "options": [
+      "die Kriminalität",
+      "die Diskriminierung",
+      "die Arbeitslosigkeit"
+    ],
+    "correct": 1
+  },
+  {
+    "category": "Niemiecki – problemy społeczne",
+    "question": "Wyrażenie \"vor Kurzem\" oznacza:",
+    "options": [
+      "Dawno temu",
+      "Niedawno / od niedawna",
+      "Nigdy"
+    ],
+    "correct": 1
+  }
+];
     /*__HARDCODED_QUESTIONS_END__*/
 
     /* ============================================================================
@@ -1459,6 +1582,8 @@
       ansButtons.forEach((btn, idx) => {
         const span = btn.querySelector('.ans-text');
         span.textContent = currentQ.options[idx] || '';
+        btn.classList.toggle('hidden', idx >= currentQ.options.length);
+        btn.classList.toggle('md:col-span-2', currentQ.options.length === 3 && idx === 2);
       });
     }
 
@@ -1515,8 +1640,8 @@
       if (!hostRoom || hostRoom.status !== 'question') return;
       const p = hostRoom.players[playerId];
       if (!p || p.lastAnswerIndex !== -1) return;
-      if (!Number.isInteger(answerIdx) || answerIdx < 0 || answerIdx > 3) return;
       const currentQ = hostRoom.questions[hostRoom.currentQuestionIndex || 0];
+      if (!Number.isInteger(answerIdx) || answerIdx < 0 || answerIdx >= currentQ.options.length) return;
       const totalSec = hostRoom.questionTime || 20;
       const elapsedSec = Math.max(0, (Date.now() - hostRoom.questionStartedAt) / 1000);
       if (elapsedSec > totalSec + 1.5) return;
@@ -1637,7 +1762,7 @@
           const willBeCorrect = Math.random() < 0.75;
           let chosenIdx = currentQ.correct;
           if (!willBeCorrect) {
-            const wrongOpts = [0, 1, 2, 3].filter((i) => i !== currentQ.correct);
+            const wrongOpts = currentQ.options.map((_, i) => i).filter((i) => i !== currentQ.correct);
             chosenIdx = wrongOpts[Math.floor(Math.random() * wrongOpts.length)];
           }
 
