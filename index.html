@@ -12,8 +12,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <!-- PeerJS: połączenia P2P (WebRTC), bez własnego serwera -->
-  <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
   <script>
     tailwind.config = {
@@ -153,6 +151,20 @@
     ::-webkit-scrollbar-track { background: rgba(15, 7, 34, 0.6); }
     ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.5); border-radius: 9999px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.8); }
+
+    /* ===== CZARNY MOTYW (fioletowe akcenty zostają) ===== */
+    body { background: #09090b !important; color: #f4f4f5; }
+    .bg-grid-pattern { background-image: linear-gradient(rgba(139,92,246,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,.05) 1px, transparent 1px) !important; }
+    [class*="bg-purple-9"], [class*="from-purple-9"], [class*="to-purple-9"], [class*="from-indigo-9"], [class*="to-indigo-9"], [class*="from-fuchsia-9"] {
+      background-image: none !important; background-color: #14141b !important; }
+    [class*="border-purple-4"], [class*="border-purple-5"] { border-color: #3b3558 !important; }
+    [class*="bg-black/3"], [class*="bg-black/4"], [class*="bg-black/5"], [class*="bg-black/6"] { background-color: #0f0f14 !important; }
+    .text-purple-100 { color: #f4f4f5 !important; }
+    .text-purple-200, [class*="text-purple-200/"] { color: #d4d4d8 !important; }
+    .text-purple-300 { color: #a1a1aa !important; }
+    input, select, textarea { color: #fff; }
+    input::placeholder, textarea::placeholder { color: #71717a; }
+    header { background: rgba(9,9,11,.85) !important; border-color: #27272f !important; }
   </style>
 </head>
 
@@ -711,6 +723,22 @@
        APPLICATION LOGIC & FIREBASE MULTIPLAYER SYNCHRONIZATION
        ========================================================= -->
   <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, deleteDoc, addDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    /* ============================================================
+       KONFIGURACJA FIREBASE – wklej tu dane swojej aplikacji webowej
+       (Firebase Console → Ustawienia projektu → Twoje aplikacje → SDK)
+       ============================================================ */
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyAraHTxnw9nB2nBrK77my2W7eNGsbaTKJo",
+      authDomain: "naniemiecki.firebaseapp.com",
+      projectId: "naniemiecki",
+      storageBucket: "naniemiecki.firebasestorage.app",
+      messagingSenderId: "9020338678",
+      appId: "1:9020338678:web:2b290d7731a23dd08bd7d7"
+    };
 
     /* ============================================================================
        1. DANE NA SZTYWNO (HARDCODED PRESENTATION QUESTIONS)
@@ -912,11 +940,9 @@
       }
     };
 
-    const PEER_PREFIX = 'quizarena-pl-';
-    let peer = null;          // obiekt PeerJS (host i klient)
-    let hostConn = null;      // klient: połączenie z hostem
+    let db = null, auth = null, firebaseReady = false;
+    let unsubRoom = null, unsubActions = null;
     let hostRoom = null;      // TYLKO host: pełny stan gry (z poprawnymi odpowiedziami)
-    const clientConns = new Map(); // TYLKO host: playerId -> połączenie
 
     let myPlayerId = 'player_' + Math.random().toString(36).substring(2, 10);
     let myNickname = '';
@@ -935,12 +961,24 @@
     let selectedPowerKey = 'sabotage';
     let selectedTargetPlayerId = null;
 
+    const roomDoc = (pin) => doc(db, 'rooms', String(pin));
+
+    async function initFirebase() {
+      if (!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.startsWith('WKLEJ')) return false;
+      const app = initializeApp(FIREBASE_CONFIG);
+      auth = getAuth(app);
+      db = getFirestore(app);
+      await signInAnonymously(auth);
+      myPlayerId = auth.currentUser.uid;
+      return true;
+    }
+
     function newPlayer(id, name, avatar, isBot, isHost) {
       return { id, name, avatar, score: 0, streak: 0, maxStreak: 0, powersAvailable: 0, powersUsed: 0,
         lastAnswerIndex: -1, lastAnswerCorrect: false, lastPointsEarned: 0, isBot, isHost, disconnected: false };
     }
 
-    // Host buduje wersję publiczną: bez listy pytań, poprawna odpowiedź tylko po zakończeniu rundy
+    // Host zapisuje do Firestore wersję publiczną: bez listy pytań, poprawna odpowiedź dopiero po rundzie
     function publishState() {
       if (!hostRoom) return;
       const q = hostRoom.questions[hostRoom.currentQuestionIndex] || hostRoom.questions[0];
@@ -952,25 +990,30 @@
         totalQuestions: questions.length,
         currentQuestion: { category: q.category, question: q.question, options: q.options, correct: reveal ? q.correct : null }
       }));
-      clientConns.forEach((c) => { if (c.open) c.send({ type: 'state', room: pub }); });
+      setDoc(roomDoc(hostRoom.pin), pub).catch((e) => console.error('Zapis pokoju:', e));
       handleRoomSnapshotUpdate(pub);
     }
 
+    // Klient wysyła akcję (join / answer / power / leave) do Hosta
     function sendToHost(msg) {
-      if (hostConn && hostConn.open) hostConn.send(msg);
+      if (!db || !currentRoomPin) return;
+      addDoc(collection(roomDoc(currentRoomPin), 'actions'), { ...msg, pid: myPlayerId, ts: Date.now() })
+        .catch((e) => console.error('Wysyłanie akcji:', e));
     }
 
     function teardownNetwork() {
-      clientConns.forEach((c) => { try { c.close(); } catch (e) {} });
-      clientConns.clear();
-      const oldPeer = peer;
-      peer = null; hostConn = null; hostRoom = null; currentRoomData = null;
-      if (oldPeer) { try { oldPeer.destroy(); } catch (e) {} }
+      if (unsubRoom) { unsubRoom(); unsubRoom = null; }
+      if (unsubActions) { unsubActions(); unsubActions = null; }
+      hostRoom = null; currentRoomData = null;
     }
 
     function leaveRoom() {
       clearQuestionTimer();
       clearBotTimeouts();
+      if (currentRoomPin && db) {
+        if (hostRoom) deleteDoc(roomDoc(currentRoomPin)).catch(() => {});
+        else sendToHost({ type: 'leave' });
+      }
       teardownNetwork();
       currentRoomPin = null;
       isRoomHost = false;
@@ -980,54 +1023,34 @@
       switchView('viewHome');
     }
 
-    async function openHostPeer() {
-      for (let i = 0; i < 6; i++) {
-        const pin = String(Math.floor(100000 + Math.random() * 900000));
-        try {
-          const p = await new Promise((resolve, reject) => {
-            let done = false;
-            const x = new Peer(PEER_PREFIX + pin, { debug: 0 });
-            const t = setTimeout(() => { if (!done) { done = true; try { x.destroy(); } catch (e) {} reject({ type: 'timeout' }); } }, 12000);
-            x.on('open', () => { if (!done) { done = true; clearTimeout(t); resolve(x); } });
-            x.on('error', (e) => { if (!done) { done = true; clearTimeout(t); try { x.destroy(); } catch (e2) {} reject(e); } else console.warn('Peer:', e); });
-          });
-          return { p, pin };
-        } catch (e) {
-          if (!e || e.type !== 'unavailable-id') throw e;
-        }
-      }
-      throw { type: 'unavailable-id' };
-    }
+    window.addEventListener('beforeunload', () => {
+      if (hostRoom && db) deleteDoc(roomDoc(hostRoom.pin)).catch(() => {});
+    });
 
-    function hostHandleMessage(conn, msg) {
-      if (!hostRoom || !msg || typeof msg !== 'object') return;
-      if (msg.type === 'join') {
-        const id = String(msg.playerId || '').slice(0, 40);
-        if (!id) return;
-        conn._pid = id;
-        clientConns.set(id, conn);
-        const name = String(msg.name || '').trim().slice(0, 20) || 'Gracz';
-        const avatar = AVATARS.includes(msg.avatar) ? msg.avatar : AVATARS[0];
-        const ex = hostRoom.players[id];
-        if (ex) { ex.name = name; ex.avatar = avatar; ex.disconnected = false; }
-        else hostRoom.players[id] = newPlayer(id, name, avatar, false, false);
-        publishState();
-        return;
-      }
-      const pid = conn._pid;
-      if (!pid || !hostRoom.players[pid]) return;
-      if (msg.type === 'answer') hostProcessAnswer(pid, msg.idx);
-      else if (msg.type === 'power') applyPowerEffectInRoom(pid, msg.targetId, msg.powerKey);
-    }
-
-    function hostHandleDisconnect(conn) {
-      const pid = conn._pid;
-      if (!pid || !hostRoom) return;
-      if (clientConns.get(pid) === conn) clientConns.delete(pid);
-      if (!hostRoom.players[pid]) return;
+    function hostRemovePlayer(pid) {
+      if (!hostRoom || !hostRoom.players[pid]) return;
       if (hostRoom.status === 'lobby') delete hostRoom.players[pid];
       else hostRoom.players[pid].disconnected = true;
       publishState();
+    }
+
+    function hostHandleMessage(msg) {
+      if (!hostRoom || !msg || typeof msg !== 'object') return;
+      const pid = String(msg.pid || '').slice(0, 60);
+      if (!pid) return;
+      if (msg.type === 'join') {
+        const name = String(msg.name || '').trim().slice(0, 20) || 'Gracz';
+        const avatar = AVATARS.includes(msg.avatar) ? msg.avatar : AVATARS[0];
+        const ex = hostRoom.players[pid];
+        if (ex) { ex.name = name; ex.avatar = avatar; ex.disconnected = false; }
+        else hostRoom.players[pid] = newPlayer(pid, name, avatar, false, false);
+        publishState();
+        return;
+      }
+      if (!hostRoom.players[pid]) return;
+      if (msg.type === 'answer') hostProcessAnswer(pid, msg.idx);
+      else if (msg.type === 'power') applyPowerEffectInRoom(pid, msg.targetId, msg.powerKey);
+      else if (msg.type === 'leave') hostRemovePlayer(pid);
     }
 
     /* ============================================================================
@@ -1104,27 +1127,26 @@
       return name;
     }
 
+    function firebaseMissingToast() {
+      showToastBanner(`<span class="text-2xl">🔧</span><span>Firebase nie jest skonfigurowany lub nie połączył się. Wklej <b>FIREBASE_CONFIG</b> w pliku index.html (instrukcja w odpowiedzi).</span>`, 'border-rose-500');
+    }
+
     async function handleCreateRoom() {
       sfx.click();
+      if (!firebaseReady) return firebaseMissingToast();
       const name = getValidatedNickname();
       const btn = document.getElementById('createRoomBtn');
       btn.disabled = true;
-      teardownNetwork();
       try {
-        const { p, pin } = await openHostPeer();
-        peer = p;
-        peer.on('connection', (conn) => {
-          conn.on('data', (msg) => hostHandleMessage(conn, msg));
-          conn.on('close', () => hostHandleDisconnect(conn));
-        });
-        peer.on('disconnected', () => { try { peer && peer.reconnect(); } catch (e) {} });
-        peer.on('error', (e) => console.warn('Peer:', e));
-
-        currentRoomPin = pin;
-        isRoomHost = true;
-        renderedQuestionIndex = -1;
-        prevMe = null;
-        processedCombatIds.clear();
+        teardownNetwork();
+        let pin = null;
+        for (let i = 0; i < 6 && !pin; i++) {
+          const cand = String(Math.floor(100000 + Math.random() * 900000));
+          if (!(await getDoc(roomDoc(cand))).exists()) pin = cand;
+        }
+        if (!pin) throw new Error('pin');
+        currentRoomPin = pin; isRoomHost = true;
+        renderedQuestionIndex = -1; prevMe = null; processedCombatIds.clear();
         hostRoom = {
           pin, hostId: myPlayerId, status: 'lobby', createdAt: Date.now(),
           streakTarget: parseInt(document.getElementById('streakTargetSelect').value, 10) || 5,
@@ -1134,18 +1156,27 @@
           players: { [myPlayerId]: newPlayer(myPlayerId, name, myAvatar, false, true) },
           combatLogs: []
         };
+        unsubActions = onSnapshot(collection(roomDoc(pin), 'actions'), (snap) => {
+          snap.docChanges().forEach((ch) => {
+            if (ch.type !== 'added') return;
+            const data = ch.doc.data();
+            deleteDoc(ch.doc.ref).catch(() => {});
+            hostHandleMessage(data);
+          });
+        }, (e) => console.error('Akcje:', e));
         publishState();
       } catch (err) {
         console.error(err);
-        teardownNetwork();
-        showToastBanner(`<span class="text-2xl">❌</span><span>Nie udało się utworzyć pokoju (${(err && err.type) || 'błąd sieci'}). Sprawdź internet i spróbuj ponownie.</span>`, 'border-rose-500');
+        currentRoomPin = null; isRoomHost = false; teardownNetwork();
+        showToastBanner(`<span class="text-2xl">❌</span><span>Nie udało się utworzyć pokoju. Sprawdź reguły Firestore i internet.</span>`, 'border-rose-500');
       } finally {
         btn.disabled = false;
       }
     }
 
-    function handleJoinRoom() {
+    async function handleJoinRoom() {
       sfx.click();
+      if (!firebaseReady) return firebaseMissingToast();
       const pin = document.getElementById('joinPinInput').value.trim();
       if (!/^\d{6}$/.test(pin)) {
         showToastBanner(`<span class="text-2xl">⚠️</span><span>Wpisz poprawny, 6-cyfrowy kod PIN pokoju!</span>`, 'border-rose-400');
@@ -1154,48 +1185,33 @@
       const name = getValidatedNickname();
       const btn = document.getElementById('joinRoomBtn');
       btn.disabled = true;
-      teardownNetwork();
-
-      let settled = false;
-      let timer = null;
-      const fail = (html) => {
-        if (settled) return;
-        settled = true; clearTimeout(timer); btn.disabled = false;
-        teardownNetwork();
-        showToastBanner(html, 'border-rose-500');
-      };
-      timer = setTimeout(() => fail(`<span class="text-2xl">⏱️</span><span>Nie udało się połączyć z pokojem <b>${pin}</b>. Sprawdź kod i internet.</span>`), 15000);
-
-      const myPeer = new Peer(undefined, { debug: 0 });
-      peer = myPeer;
-      myPeer.on('error', (err) => {
-        if (err.type === 'peer-unavailable') {
-          fail(`<span class="text-2xl">❌</span><span>Nie znaleziono pokoju o kodzie PIN <b>${pin}</b>. Upewnij się, że Host utworzył grę!</span>`);
-        } else if (!settled) {
-          fail(`<span class="text-2xl">⚠️</span><span>Błąd połączenia (${err.type}). Spróbuj ponownie.</span>`);
+      try {
+        const snap = await getDoc(roomDoc(pin));
+        if (!snap.exists()) {
+          showToastBanner(`<span class="text-2xl">❌</span><span>Nie znaleziono pokoju o kodzie PIN <b>${pin}</b>. Upewnij się, że Host utworzył grę!</span>`, 'border-rose-500');
+          return;
         }
-      });
-      myPeer.on('open', () => {
-        const conn = myPeer.connect(PEER_PREFIX + pin, { reliable: true, serialization: 'json' });
-        hostConn = conn;
-        conn.on('open', () => conn.send({ type: 'join', playerId: myPlayerId, name, avatar: myAvatar }));
-        conn.on('data', (msg) => {
-          if (!msg || msg.type !== 'state') return;
-          if (!settled) {
-            settled = true; clearTimeout(timer); btn.disabled = false;
-            currentRoomPin = pin; isRoomHost = false;
-            renderedQuestionIndex = -1; prevMe = null;
-            processedCombatIds.clear();
-            (msg.room.combatLogs || []).forEach((l) => processedCombatIds.add(l.id));
+        teardownNetwork();
+        currentRoomPin = pin; isRoomHost = false;
+        renderedQuestionIndex = -1; prevMe = null; processedCombatIds.clear();
+        (snap.data().combatLogs || []).forEach((l) => processedCombatIds.add(l.id));
+        unsubRoom = onSnapshot(roomDoc(pin), (s) => {
+          if (!s.exists()) {
+            if (currentRoomPin === pin && !isRoomHost) {
+              leaveRoom();
+              showToastBanner(`<span class="text-2xl">🔌</span><span>Host zakończył grę.</span>`, 'border-rose-500');
+            }
+            return;
           }
-          handleRoomSnapshotUpdate(msg.room);
-        });
-        conn.on('close', () => {
-          if (hostConn !== conn) return;
-          leaveRoom();
-          showToastBanner(`<span class="text-2xl">🔌</span><span>Połączenie z Hostem zostało zakończone.</span>`, 'border-rose-500');
-        });
-      });
+          handleRoomSnapshotUpdate(s.data());
+        }, (e) => console.error('Pokój:', e));
+        sendToHost({ type: 'join', name, avatar: myAvatar });
+      } catch (err) {
+        console.error(err);
+        showToastBanner(`<span class="text-2xl">⚠️</span><span>Błąd połączenia z Firebase. Spróbuj ponownie.</span>`, 'border-rose-500');
+      } finally {
+        btn.disabled = false;
+      }
     }
 
     function handleAddBot() {
@@ -2042,6 +2058,8 @@
     window.addEventListener('DOMContentLoaded', async () => {
       renderAvatarPicker();
       updateQuestionCountBadge();
+      try { firebaseReady = await initFirebase(); } catch (e) { console.error('Firebase:', e); firebaseReady = false; }
+      if (!firebaseReady) firebaseMissingToast();
 
       // Sound Toggle
       document.getElementById('soundToggleBtn').onclick = () => {
