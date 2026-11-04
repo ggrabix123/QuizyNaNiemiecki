@@ -147,3 +147,1352 @@
     <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3 cursor-pointer" id="brandLogoBtn" title="Powrót do menu">
         <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-fuchsia-500 via-purple-600 to-indigo-600 flex items-center justify-center shadow-lg border border-white/20">
+          <i class="fa-solid fa-bolt text-amber-300 text-xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-display text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-fuchsia-200 to-amber-300 bg-clip-text text-transparent">QuizArena</span>
+            <span class="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">Powery 5x 🔥</span>
+          </div>
+          <p class="text-xs text-purple-200/70 hidden sm:block">Wieloosobowy Quiz na Żywo • Rywalizacja & Sabotaż</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div id="headerRoomBadge" class="hidden items-center gap-2 bg-purple-950/90 border border-purple-400/40 px-3.5 py-1.5 rounded-xl">
+          <span class="text-xs text-purple-300 uppercase font-semibold">PIN:</span>
+          <span id="headerPinValue" class="font-display font-bold text-amber-300 text-lg tracking-widest">------</span>
+          <button id="headerCopyPinBtn" class="text-purple-300 hover:text-white text-xs ml-1" title="Kopiuj PIN"><i class="fa-regular fa-copy"></i></button>
+        </div>
+
+        <button id="openEditorModalBtn" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs sm:text-sm font-semibold flex items-center gap-2 transition">
+          <i class="fa-solid fa-sliders text-amber-300"></i>
+          <span class="hidden md:inline">Zarządzaj Pytaniami / GitHub</span>
+          <span class="md:hidden">Pytania</span>
+        </button>
+
+        <button id="soundToggleBtn" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 flex items-center justify-center text-amber-300 transition" title="Dźwięk">
+          <i class="fa-solid fa-volume-high" id="soundIcon"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="combatToastContainer" class="fixed top-20 left-1/2 -translate-x-1/2 z-40 w-full max-w-lg px-4 pointer-events-none flex flex-col gap-2"></div>
+
+  <!-- MAIN CONTAINER -->
+  <main id="mainAppContainer" class="flex-1 flex flex-col justify-center items-center w-full max-w-6xl mx-auto px-4 py-6">
+
+    <!-- VIEW 1: HOME -->
+    <section id="viewHome" class="w-full max-w-4xl mx-auto">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-200 text-xs sm:text-sm font-semibold mb-4">
+          <i class="fa-solid fa-fire text-amber-400"></i>
+          <span>Zdobądź passę 5 poprawnych odpowiedzi i zaatakuj rywali Powerem!</span>
+        </div>
+        <h1 class="font-display text-4xl sm:text-6xl font-bold tracking-tight text-white drop-shadow-lg">
+          Walcz na wiedzę i <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-orange-400 to-rose-400">Powery!</span>
+        </h1>
+        <p class="text-purple-200/80 mt-3 text-sm sm:text-base max-w-2xl mx-auto">
+          Dołącz z telefonu lub komputera za pomocą kodu PIN. Odpowiadaj szybko, buduj serię trafień i odbieraj punkty przeciwnikom!
+        </p>
+      </div>
+
+      <div class="bg-purple-950/60 backdrop-blur-xl border border-white/15 rounded-3xl p-5 sm:p-7 shadow-2xl mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+          <div class="md:col-span-6">
+            <label class="block text-xs font-bold uppercase tracking-wider text-purple-300 mb-2">
+              <i class="fa-solid fa-user-astronaut mr-1 text-amber-300"></i> Twój Pseudonim w Grze
+            </label>
+            <input 
+              id="playerNameInput" 
+              type="text" 
+              maxlength="16" 
+              placeholder="Wpisz swój nick..." 
+              class="w-full px-4 py-3.5 rounded-2xl bg-black/40 border-2 border-purple-500/40 focus:border-amber-400 focus:outline-none text-white font-bold text-lg placeholder-purple-300/40 transition"
+            />
+          </div>
+
+          <div class="md:col-span-6">
+            <label class="block text-xs font-bold uppercase tracking-wider text-purple-300 mb-2">
+              <i class="fa-solid fa-masks-theater mr-1 text-amber-300"></i> Wybierz Awatar Bojowy
+            </label>
+            <div id="avatarPickerGrid" class="grid grid-cols-8 gap-1.5 sm:gap-2"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- JOIN ROOM -->
+        <div class="bg-gradient-to-b from-indigo-950/80 to-purple-950/80 backdrop-blur-xl border-2 border-indigo-400/30 rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-2xl">
+          <div>
+            <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 border border-indigo-400/40 flex items-center justify-center text-indigo-300 text-2xl mb-4">
+              <i class="fa-solid fa-gamepad"></i>
+            </div>
+            <h2 class="font-display text-2xl sm:text-3xl font-bold text-white">Dołącz do Gry</h2>
+            <p class="text-purple-200/75 text-sm mt-1 mb-5">Masz kod PIN od prowadzącego? Wpisz go poniżej, aby wejść do pokoju.</p>
+            <div class="mb-4">
+              <input 
+                id="joinPinInput" 
+                type="text" 
+                inputmode="numeric"
+                maxlength="6" 
+                placeholder="KOD PIN (6 cyfr)" 
+                class="w-full text-center font-display tracking-[0.25em] text-2xl sm:text-3xl font-bold py-3.5 px-4 rounded-2xl bg-black/50 border-2 border-indigo-400/50 focus:border-amber-400 focus:outline-none text-amber-300 placeholder-indigo-300/30 uppercase"
+              />
+            </div>
+          </div>
+          <button id="joinRoomBtn" class="w-full py-4 rounded-2xl font-display text-xl font-bold text-gray-950 btn-3d-amber flex items-center justify-center gap-2">
+            <span>DOŁĄCZ DO POKOJU</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+        <!-- CREATE ROOM -->
+        <div class="bg-gradient-to-b from-fuchsia-950/70 to-purple-950/80 backdrop-blur-xl border-2 border-fuchsia-400/30 rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-2xl">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div class="w-12 h-12 rounded-2xl bg-fuchsia-500/20 border border-fuchsia-400/40 flex items-center justify-center text-fuchsia-300 text-2xl">
+                <i class="fa-solid fa-crown"></i>
+              </div>
+              <span id="questionCountBadge" class="text-xs font-bold px-3 py-1 rounded-full bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-200">
+                12 pytań w puli
+              </span>
+            </div>
+            <h2 class="font-display text-2xl sm:text-3xl font-bold text-white">Stwórz Pokój Gry</h2>
+            <p class="text-purple-200/75 text-sm mt-1 mb-5">Utwórz nową arenę, wyświetl PIN dla graczy i rozpocznij quiz!</p>
+
+            <div class="bg-black/30 border border-white/10 rounded-2xl p-3.5 mb-5">
+              <div class="text-xs font-bold uppercase tracking-wider text-amber-300 mb-2 flex items-center gap-1.5">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Tajne Powery w grze:
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-xs text-purple-100">
+                <div class="flex items-center gap-1.5 bg-white/5 px-2.5 py-1.5 rounded-lg"><span>💥</span> <span><b>Sabotaż:</b> -400 pkt</span></div>
+                <div class="flex items-center gap-1.5 bg-white/5 px-2.5 py-1.5 rounded-lg"><span>🧛</span> <span><b>Wampir:</b> Kradzież 250 pkt</span></div>
+                <div class="flex items-center gap-1.5 bg-white/5 px-2.5 py-1.5 rounded-lg"><span>❄️</span> <span><b>Lód:</b> -200 pkt & Reset</span></div>
+                <div class="flex items-center gap-1.5 bg-white/5 px-2.5 py-1.5 rounded-lg"><span>⚡</span> <span><b>Mega Boost:</b> +350 pkt</span></div>
+              </div>
+            </div>
+          </div>
+
+          <button id="createRoomBtn" class="w-full py-4 rounded-2xl font-display text-xl font-bold text-white btn-3d-purple flex items-center justify-center gap-2">
+            <i class="fa-solid fa-plus-circle"></i>
+            <span>STWÓRZ NOWĄ GRĘ (HOST)</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: LOBBY -->
+    <section id="viewLobby" class="w-full max-w-5xl mx-auto hidden">
+      <div class="bg-purple-950/75 backdrop-blur-xl border-2 border-purple-400/30 rounded-3xl p-6 sm:p-8 shadow-2xl">
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-6 pb-6 border-b border-white/10">
+          <div class="text-center lg:text-left">
+            <span class="text-xs font-bold uppercase tracking-widest text-amber-300 bg-amber-400/10 border border-amber-400/30 px-3 py-1 rounded-full">
+              Poczekalnia Multiplayer Na Żywo
+            </span>
+            <h2 class="font-display text-3xl sm:text-4xl font-bold mt-2">Dołącz na dowolnym urządzeniu!</h2>
+            <p class="text-purple-200/75 text-sm mt-1">Podaj znajomym poniższy kod PIN:</p>
+          </div>
+
+          <div class="flex items-center gap-4 bg-black/50 border-2 border-amber-400/60 rounded-3xl px-6 py-4 shadow-inner">
+            <div>
+              <div class="text-[11px] uppercase tracking-widest text-purple-300 font-bold">KOD PIN GRY</div>
+              <div id="lobbyPinDisplay" class="font-display text-4xl sm:text-5xl font-bold text-amber-300 tracking-[0.2em]">------</div>
+            </div>
+            <button id="copyPinLobbyBtn" class="px-4 py-3 rounded-2xl bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/40 text-amber-200 font-bold text-sm flex flex-col items-center gap-1 transition">
+              <i class="fa-regular fa-copy text-lg"></i>
+              <span class="text-[11px]">Kopiuj</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="my-6 bg-black/30 border border-white/10 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+          <div class="flex flex-wrap items-center gap-4">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold uppercase text-purple-300"><i class="fa-solid fa-fire text-amber-400 mr-1"></i>Passa do Powera:</span>
+              <select id="streakTargetSelect" class="bg-purple-900/90 border border-purple-400/40 rounded-xl px-3 py-1.5 text-sm font-bold text-white focus:outline-none">
+                <option value="5" selected>5 pytań z rzędu (Klasyczny)</option>
+                <option value="3">3 pytania z rzędu (Szybka walka)</option>
+                <option value="2">2 pytania z rzędu (Chaos!)</option>
+              </select>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold uppercase text-purple-300"><i class="fa-regular fa-clock text-sky-400 mr-1"></i>Czas na pytanie:</span>
+              <select id="questionTimeSelect" class="bg-purple-900/90 border border-purple-400/40 rounded-xl px-3 py-1.5 text-sm font-bold text-white focus:outline-none">
+                <option value="15">15 sekund</option>
+                <option value="20" selected>20 sekund</option>
+                <option value="30">30 sekund</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="hostBotControls" class="flex items-center gap-2">
+            <button id="addBotBtn" class="px-3.5 py-2 rounded-xl bg-indigo-500/25 hover:bg-indigo-500/40 border border-indigo-400/40 text-indigo-200 text-xs sm:text-sm font-bold flex items-center gap-2 transition">
+              <i class="fa-solid fa-robot text-indigo-300"></i>
+              <span>+ Dodaj Bota Rywala</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-display text-xl font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-users text-fuchsia-400"></i>
+              <span>Gracze w pokoju (<span id="lobbyPlayerCount">0</span>)</span>
+            </h3>
+            <span id="lobbyStatusHint" class="text-xs text-purple-300 animate-pulse">Oczekiwanie na start gry przez Hosta...</span>
+          </div>
+
+          <div id="lobbyPlayersGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 min-h-[120px]"></div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/10">
+          <button id="leaveLobbyBtn" class="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-red-500/20 border border-white/15 text-sm font-bold text-purple-200 transition">
+            <i class="fa-solid fa-arrow-left mr-2"></i>Opuść Pokój
+          </button>
+
+          <button id="startGameBtn" class="w-full sm:w-auto px-10 py-4 rounded-2xl font-display text-2xl font-bold text-gray-950 btn-3d-amber flex items-center justify-center gap-3">
+            <i class="fa-solid fa-play"></i>
+            <span>ROZPOCZNIJ QUIZ!</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: GAME -->
+    <section id="viewGame" class="w-full max-w-5xl mx-auto hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 mb-4">
+        <div class="lg:col-span-5 bg-purple-950/80 border border-white/15 rounded-2xl px-4 py-3 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div id="hudMyAvatar" class="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center text-2xl border border-white/15">🦊</div>
+            <div>
+              <div id="hudMyName" class="font-bold text-sm text-purple-200">Gracz</div>
+              <div class="font-display text-2xl font-bold text-amber-300"><span id="hudMyScore">0</span> <span class="text-xs text-purple-300 font-sans">pkt</span></div>
+            </div>
+          </div>
+
+          <div class="text-right">
+            <span id="hudCategoryBadge" class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-200 border border-fuchsia-400/30">Kategoria</span>
+            <div class="font-display text-lg font-bold text-white mt-0.5">
+              Pytanie <span id="hudQuestionIndex">1</span>/<span id="hudQuestionTotal">12</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-7 bg-purple-950/80 border border-white/15 rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div>
+              <div class="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1">
+                <span>Passa do Powera:</span>
+                <span id="hudStreakText" class="text-white">0 / 5</span>
+              </div>
+              <div id="hudFlameIcons" class="flex items-center gap-1.5 mt-1"></div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="openPowerModalBtn" disabled class="px-4 py-2.5 rounded-xl font-display font-bold text-sm sm:text-base flex items-center gap-2 transition disabled:opacity-40 disabled:bg-white/10 disabled:text-purple-300 bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-gray-950">
+              <i class="fa-solid fa-bolt"></i>
+              <span>UŻYJ POWERA (<span id="hudPowerCount">0</span>)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-b from-purple-900/90 to-indigo-950/90 backdrop-blur-xl border-2 border-purple-400/40 rounded-3xl p-6 sm:p-8 shadow-2xl mb-5 relative overflow-hidden">
+        <div class="w-full h-2.5 bg-black/40 rounded-full overflow-hidden mb-5">
+          <div id="questionTimerBar" class="h-full bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-500 transition-all duration-200" style="width: 100%;"></div>
+        </div>
+
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div class="w-20 h-20 rounded-full bg-black/50 border-4 border-amber-400 flex flex-col items-center justify-center shrink-0 shadow-lg">
+            <span id="questionTimerSeconds" class="font-display text-3xl font-bold text-white leading-none">20</span>
+            <span class="text-[10px] uppercase tracking-wider text-amber-300 font-bold">sek</span>
+          </div>
+
+          <div class="flex-1 text-center md:text-left">
+            <h2 id="questionTextDisplay" class="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-snug">
+              Trwa ładowanie pytania...
+            </h2>
+          </div>
+
+          <div class="bg-black/40 border border-white/15 rounded-2xl px-4 py-3 text-center shrink-0">
+            <div class="text-xs text-purple-300 font-semibold">Odpowiedziało</div>
+            <div id="hudAnsweredCounter" class="font-display text-2xl font-bold text-emerald-400">0 / 1</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="answerButtonsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <button data-index="0" class="ans-card ans-red rounded-2xl p-5 sm:p-6 text-left flex items-center gap-4 group">
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-black/20 flex items-center justify-center text-white text-2xl shrink-0">▲</div>
+          <span class="ans-text font-display text-xl sm:text-2xl font-bold text-white leading-tight break-words">Opcja A</span>
+        </button>
+        <button data-index="1" class="ans-card ans-blue rounded-2xl p-5 sm:p-6 text-left flex items-center gap-4 group">
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-black/20 flex items-center justify-center text-white text-2xl shrink-0">◆</div>
+          <span class="ans-text font-display text-xl sm:text-2xl font-bold text-white leading-tight break-words">Opcja B</span>
+        </button>
+        <button data-index="2" class="ans-card ans-yellow rounded-2xl p-5 sm:p-6 text-left flex items-center gap-4 group">
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-black/20 flex items-center justify-center text-white text-2xl shrink-0">●</div>
+          <span class="ans-text font-display text-xl sm:text-2xl font-bold text-white leading-tight break-words">Opcja C</span>
+        </button>
+        <button data-index="3" class="ans-card ans-green rounded-2xl p-5 sm:p-6 text-left flex items-center gap-4 group">
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-black/20 flex items-center justify-center text-white text-2xl shrink-0">■</div>
+          <span class="ans-text font-display text-xl sm:text-2xl font-bold text-white leading-tight break-words">Opcja D</span>
+        </button>
+      </div>
+
+      <div id="postAnswerBanner" class="hidden mt-5 bg-black/50 border-2 border-white/20 rounded-2xl p-4 text-center">
+        <p id="postAnswerText" class="font-display text-xl font-bold text-white"></p>
+      </div>
+
+      <div id="roundSummaryPanel" class="hidden mt-6 bg-purple-950/90 backdrop-blur-xl border-2 border-amber-400/50 rounded-3xl p-6 shadow-2xl">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4 pb-4 border-b border-white/10">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-amber-300">Podsumowanie Rundy & Walka na Powery</span>
+            <h3 class="font-display text-2xl sm:text-3xl font-bold text-white mt-1" id="roundCorrectAnswerLabel">Poprawna odpowiedź: ...</h3>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button id="roundSummaryPowerBtn" class="hidden px-5 py-3 rounded-2xl font-display font-bold text-gray-950 bg-gradient-to-r from-amber-300 via-yellow-400 to-orange-500 power-ready-glow flex items-center gap-2">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span>ATAKUJ RYWALA POWEREM!</span>
+            </button>
+
+            <button id="nextQuestionHostBtn" class="hidden px-7 py-3.5 rounded-2xl font-display text-lg font-bold text-gray-950 btn-3d-amber flex items-center gap-2">
+              <span>NASTĘPNE PYTANIE</span>
+              <i class="fa-solid fa-forward-step"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <div class="text-xs font-bold uppercase tracking-wider text-purple-300 mb-3 flex items-center justify-between">
+            <span>Aktualny Ranking Graczy (Na Żywo)</span>
+            <span>Passa & Punkty</span>
+          </div>
+          <div id="roundLeaderboardList" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: PODIUM -->
+    <section id="viewPodium" class="w-full max-w-5xl mx-auto hidden">
+      <div class="bg-purple-950/80 backdrop-blur-xl border-2 border-amber-400/40 rounded-3xl p-6 sm:p-8 shadow-2xl text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-xs font-bold uppercase tracking-widest mb-3">
+          <i class="fa-solid fa-trophy"></i> Wielki Finał QuizArena
+        </div>
+        <h2 class="font-display text-3xl sm:text-5xl font-bold text-white">Podium Zwycięzców!</h2>
+        <p class="text-purple-200/80 text-sm sm:text-base mt-1 mb-8">Osoba z największą liczbą punktów wygrywa!</p>
+
+        <div id="podiumStage" class="grid grid-cols-3 gap-3 sm:gap-6 items-end max-w-2xl mx-auto mb-10 pt-6"></div>
+        <div id="podiumAwardsGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 text-left"></div>
+
+        <div class="bg-black/40 border border-white/10 rounded-2xl p-4 sm:p-5 text-left mb-8">
+          <h3 class="font-display text-lg font-bold text-amber-300 mb-3">Pełna Tabela Wyników</h3>
+          <div id="finalScoreboardList" class="space-y-2"></div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center gap-4">
+          <button id="playAgainHostBtn" class="hidden px-8 py-4 rounded-2xl font-display text-xl font-bold text-gray-950 btn-3d-amber flex items-center gap-2">
+            <i class="fa-solid fa-rotate-right"></i>
+            <span>ZAGRAJ PONOWNIE W TYM POKOJU</span>
+          </button>
+          <button id="backToHomeFromPodiumBtn" class="px-6 py-4 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 font-bold text-sm text-white transition">
+            Powrót do Menu Głównego
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: POWER COMBAT -->
+  <div id="powerCombatModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-gradient-to-b from-purple-900 to-indigo-950 border-2 border-amber-400 rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+      <button id="closePowerModalBtn" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-12 h-12 rounded-2xl bg-amber-400/20 border border-amber-400 flex items-center justify-center text-3xl">⚡</div>
+        <div>
+          <span class="text-xs font-bold uppercase tracking-widest text-amber-300">Nagroda za Passę!</span>
+          <h3 class="font-display text-2xl sm:text-3xl font-bold text-white">Użyj Powera Bojowego</h3>
+        </div>
+      </div>
+
+      <div class="mb-5">
+        <label class="block text-xs font-bold uppercase tracking-wider text-purple-200 mb-2.5">Krok 1: Wybierz rodzaj Powera:</label>
+        <div id="powerTypeGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button data-power="sabotage" class="power-choice-btn text-left p-3.5 rounded-2xl border-2 border-amber-400 bg-amber-400/15 transition flex items-start gap-3">
+            <span class="text-3xl">💥</span>
+            <div>
+              <div class="font-display font-bold text-white text-base">Sabotaż Punktowy</div>
+              <div class="text-xs text-amber-200 font-semibold">-400 pkt wybranemu graczowi</div>
+            </div>
+          </button>
+          <button data-power="vampire" class="power-choice-btn text-left p-3.5 rounded-2xl border-2 border-white/15 bg-black/30 hover:border-purple-400 transition flex items-start gap-3">
+            <span class="text-3xl">🧛</span>
+            <div>
+              <div class="font-display font-bold text-white text-base">Wampir Punktów</div>
+              <div class="text-xs text-rose-300 font-semibold">-250 pkt rywalowi, +250 pkt Tobie</div>
+            </div>
+          </button>
+          <button data-power="freeze" class="power-choice-btn text-left p-3.5 rounded-2xl border-2 border-white/15 bg-black/30 hover:border-purple-400 transition flex items-start gap-3">
+            <span class="text-3xl">❄️</span>
+            <div>
+              <div class="font-display font-bold text-white text-base">Lodowy Pocisk</div>
+              <div class="text-xs text-sky-300 font-semibold">-200 pkt & Reset Passy rywala</div>
+            </div>
+          </button>
+          <button data-power="boost" class="power-choice-btn text-left p-3.5 rounded-2xl border-2 border-white/15 bg-black/30 hover:border-purple-400 transition flex items-start gap-3">
+            <span class="text-3xl">⚡</span>
+            <div>
+              <div class="font-display font-bold text-white text-base">Złoty Mega Boost</div>
+              <div class="text-xs text-emerald-300 font-semibold">+350 pkt dla Ciebie</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div id="targetSelectionSection" class="mb-6">
+        <label class="block text-xs font-bold uppercase tracking-wider text-purple-200 mb-2.5">Krok 2: Wybierz cel:</label>
+        <div id="powerTargetPlayersList" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-56 overflow-y-auto pr-1"></div>
+      </div>
+
+      <button id="executePowerAttackBtn" class="w-full py-4 rounded-2xl font-display text-xl font-bold text-gray-950 btn-3d-amber flex items-center justify-center gap-2">
+        <i class="fa-solid fa-fire-flame-curved"></i>
+        <span>WYKONAJ ATAK POWEREM!</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: EDITOR & GITHUB -->
+  <div id="editorModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-purple-950 border-2 border-purple-400/50 rounded-3xl max-w-4xl w-full p-6 sm:p-7 shadow-2xl relative max-h-[92vh] flex flex-col">
+      <div class="flex items-center justify-between pb-4 border-b border-white/10">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-widest text-amber-300">Poufna baza pytań & GitHub</span>
+          <h3 class="font-display text-2xl font-bold text-white">Edytor Tajnych Pytań z Prezentacji</h3>
+        </div>
+        <button id="closeEditorModalBtn" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="flex flex-wrap gap-2 my-4">
+        <button id="tabBtnVisualQuestions" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-amber-400 text-gray-950">1. Lista Pytań (<span id="editorQuestionCounter">12</span>)</button>
+        <button id="tabBtnQuickPaste" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white/10 text-purple-200">2. Szybki Import JSON</button>
+        <button id="tabBtnGithubConfig" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white/10 text-purple-200">3. GitHub Pages</button>
+      </div>
+
+      <div id="editorTabVisual" class="flex-1 overflow-y-auto space-y-4 pr-2">
+        <div class="flex items-center justify-between bg-black/30 p-3.5 rounded-2xl border border-white/10">
+          <p class="text-xs sm:text-sm text-purple-200">Pytania są ukryte przed graczami w menu głównym. Zobaczą je dopiero w trakcie trwania rundy.</p>
+          <button id="addNewQuestionBtn" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-xs shrink-0 ml-3">+ Dodaj</button>
+        </div>
+        <div id="visualQuestionsContainer" class="space-y-4"></div>
+      </div>
+
+      <div id="editorTabJson" class="hidden flex-1 flex flex-col overflow-hidden">
+        <textarea id="jsonQuestionsTextarea" class="w-full flex-1 bg-black/60 border border-purple-400/40 rounded-2xl p-4 font-mono text-xs text-emerald-300 focus:outline-none"></textarea>
+        <button id="applyJsonQuestionsBtn" class="mt-3 self-start px-5 py-2.5 rounded-xl bg-emerald-500 text-gray-950 font-bold text-xs">Zastosuj</button>
+      </div>
+
+      <div id="editorTabGithub" class="hidden flex-1 overflow-y-auto space-y-4 pr-2 text-sm text-purple-100">
+        <div class="bg-black/40 border border-amber-400/40 rounded-2xl p-4">
+          <h4 class="font-display text-lg font-bold text-amber-300 mb-1"><i class="fa-brands fa-github mr-1"></i> Jak wgrać na GitHub Pages?</h4>
+          <ol class="list-decimal list-inside space-y-1.5 text-xs sm:text-sm text-purple-200">
+            <li>Dostosuj pytania w zakładce nr 1.</li>
+            <li>Kliknij przycisk pobierania poniżej.</li>
+            <li>Wrzuć pobrany plik <code>index.html</code> do repozytorium na GitHubie i włącz Pages w ustawieniach.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="pt-4 mt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+        <button id="saveQuestionsInSessionBtn" class="px-5 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs sm:text-sm transition">
+          <i class="fa-solid fa-check mr-1"></i> Zapisz pytania w grze
+        </button>
+        <button id="downloadStandaloneHtmlBtn" class="px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 text-gray-950 font-display font-bold text-sm flex items-center gap-2 shadow-lg">
+          <i class="fa-solid fa-download"></i>
+          <span>Pobierz gotowy index.html na GitHub</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT LOGIC -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    /*__HARDCODED_QUESTIONS_START__*/
+    let HARDCODED_QUESTIONS = [
+      {
+        category: "Zagadnienie 1",
+        question: "Który termin oznacza brak pracy w ujęciu socjalnym?",
+        options: ["die Armut", "die Arbeitslosigkeit", "die Gewalt", "die Obdachlosigkeit"],
+        correct: 1
+      },
+      {
+        category: "Zagadnienie 2",
+        question: "Jak poprawnie powiedzieć po niemiecku: 'angażować się na rzecz ochrony środowiska'?",
+        options: ["sich engagieren gegen die Umwelt", "sich engagieren für die Umwelt", "sich engagieren ohne Umwelt", "sich engagieren bei Umwelt"],
+        correct: 1
+      },
+      {
+        category: "Zagadnienie 3",
+        question: "Co oznacza pojęcie 'die Obdachlosigkeit'?",
+        options: ["Bezdomność", "Przestępczość", "Niepełnosprawność", "Uzależnienie"],
+        correct: 0
+      },
+      {
+        category: "Zagadnienie 4",
+        question: "Które z poniższych zjawisk określamy słowem 'die Gewalt'?",
+        options: ["Biedę", "Przemoc", "Pomoc", "Zaangażowanie"],
+        correct: 1
+      }
+    ];
+    /*__HARDCODED_QUESTIONS_END__*/
+
+    /*__CUSTOM_FIREBASE_START__*/
+    let CUSTOM_GITHUB_FIREBASE_CONFIG = null;
+    /*__CUSTOM_FIREBASE_END__*/
+
+    class SoundEngine {
+      constructor() { this.enabled = true; this.ctx = null; }
+      init() {
+        if (!this.ctx) {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (AC) this.ctx = new AC();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playTone(freq, type = 'sine', duration = 0.15, delay = 0, gainVal = 0.15) {
+        if (!this.enabled) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime + delay);
+          gain.gain.setValueAtTime(gainVal, this.ctx.currentTime + delay);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + delay + duration);
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.start(this.ctx.currentTime + delay);
+          osc.stop(this.ctx.currentTime + delay + duration);
+        } catch (e) {}
+      }
+      click() { this.playTone(520, 'triangle', 0.08, 0, 0.12); }
+      tick() { this.playTone(800, 'sine', 0.05, 0, 0.06); }
+      correct() {
+        this.playTone(523.25, 'triangle', 0.12, 0, 0.18);
+        this.playTone(659.25, 'triangle', 0.12, 0.1, 0.18);
+        this.playTone(783.99, 'triangle', 0.15, 0.2, 0.18);
+      }
+      wrong() { this.playTone(240, 'sawtooth', 0.22, 0, 0.16); }
+      powerUnlocked() { [440, 554.37, 659.25, 880].forEach((f, idx) => this.playTone(f, 'square', 0.14, idx * 0.07, 0.12)); }
+      attackLaunch() { this.playTone(700, 'sawtooth', 0.12, 0, 0.2); }
+      gotHit() { this.playTone(150, 'sawtooth', 0.3, 0, 0.28); }
+      fanfare() { [523.25, 659.25, 783.99, 1046.5].forEach((n, i) => this.playTone(n, 'triangle', 0.25, i * 0.15, 0.2)); }
+    }
+    const sfx = new SoundEngine();
+
+    const AVATARS = ['🦊', '🐼', '🦁', '🐯', '🐸', '🦄', '🐙', '🦖', '🤖', '👽', '🧙‍♂️', '🥷', '⚡', '🔥', '👑', '🚀'];
+    const BOT_PROFILES = [{ name: 'Kuba_Turbo', avatar: '🦖' }, { name: 'Zosia_Quiz', avatar: '🦄' }, { name: 'Mistrz_Jan', avatar: '🧙‍♂️' }];
+
+    const POWER_DEFINITIONS = {
+      sabotage: { id: 'sabotage', name: 'Sabotaż Punktowy', icon: '💥', needsTarget: true },
+      vampire: { id: 'vampire', name: 'Wampir Punktów', icon: '🧛', needsTarget: true },
+      freeze: { id: 'freeze', name: 'Lodowy Pocisk', icon: '❄️', needsTarget: true },
+      boost: { id: 'boost', name: 'Złoty Mega Boost', icon: '⚡', needsTarget: false }
+    };
+
+    let db = null;
+    let auth = null;
+    let currentUser = null;
+    let isCloudConnected = false;
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'quiz-arena-powery-app';
+
+    let myPlayerId = 'player_' + Math.random().toString(36).substring(2, 10);
+    let myNickname = '';
+    let myAvatar = AVATARS[0];
+    let currentRoomPin = null;
+    let isRoomHost = false;
+    let roomUnsubscribe = null;
+    let currentRoomData = null;
+
+    let questionInterval = null;
+    let botSimulationTimeouts = [];
+    let renderedQuestionIndex = -1;
+    let processedCombatIds = new Set();
+    let selectedPowerKey = 'sabotage';
+    let selectedTargetPlayerId = null;
+
+    const localChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('quiz_arena_channel') : null;
+    const memoryRooms = {};
+
+    async function initFirebaseService() {
+      try {
+        let configToUse = null;
+        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+          configToUse = JSON.parse(__firebase_config);
+        } else if (CUSTOM_GITHUB_FIREBASE_CONFIG) {
+          configToUse = CUSTOM_GITHUB_FIREBASE_CONFIG;
+        }
+        if (!configToUse) return;
+
+        const app = initializeApp(configToUse);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+
+        onAuthStateChanged(auth, (user) => {
+          if (user) { currentUser = user; myPlayerId = user.uid; isCloudConnected = true; }
+        });
+        if (auth.currentUser) { currentUser = auth.currentUser; myPlayerId = auth.currentUser.uid; isCloudConnected = true; }
+      } catch (err) {}
+    }
+
+    function getRoomDocRef(pin) {
+      return doc(db, 'artifacts', appId, 'public', 'data', 'quiz_rooms', String(pin));
+    }
+
+    async function saveRoomData(pin, roomObj) {
+      memoryRooms[pin] = JSON.parse(JSON.stringify(roomObj));
+      if (localChannel) localChannel.postMessage({ type: 'ROOM_UPDATE', pin, data: memoryRooms[pin] });
+      
+      if (isCloudConnected && db && currentUser) {
+        try { await setDoc(getRoomDocRef(pin), roomObj); } catch (err) {}
+      }
+      if (currentRoomPin === pin) handleRoomSnapshotUpdate(roomObj);
+    }
+
+    async function fetchRoomData(pin) {
+      if (isCloudConnected && db && currentUser) {
+        try {
+          const snap = await getDoc(getRoomDocRef(pin));
+          if (snap.exists()) return snap.data();
+        } catch (err) {}
+      }
+      return memoryRooms[pin] || null;
+    }
+
+    function subscribeToRoom(pin) {
+      if (roomUnsubscribe) { roomUnsubscribe(); roomUnsubscribe = null; }
+      if (isCloudConnected && db && currentUser) {
+        roomUnsubscribe = onSnapshot(getRoomDocRef(pin), (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            memoryRooms[pin] = data;
+            handleRoomSnapshotUpdate(data);
+          }
+        }, (err) => {});
+      }
+    }
+
+    if (localChannel) {
+      localChannel.onmessage = (ev) => {
+        if (ev.data && ev.data.type === 'ROOM_UPDATE' && ev.data.pin === currentRoomPin) {
+          memoryRooms[ev.data.pin] = ev.data.data;
+          handleRoomSnapshotUpdate(ev.data.data);
+        }
+      };
+    }
+
+    function renderAvatarPicker() {
+      const grid = document.getElementById('avatarPickerGrid');
+      grid.innerHTML = '';
+      AVATARS.forEach((emoji) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        const isSelected = emoji === myAvatar;
+        btn.className = `h-10 sm:h-11 rounded-xl flex items-center justify-center text-xl transition border ${isSelected ? 'bg-amber-400/25 border-amber-400 scale-110 shadow-md' : 'bg-black/30 border-white/10 hover:bg-white/10'}`;
+        btn.textContent = emoji;
+        btn.onclick = () => { sfx.click(); myAvatar = emoji; renderAvatarPicker(); };
+        grid.appendChild(btn);
+      });
+    }
+
+    function updateQuestionCountBadge() {
+      const badge = document.getElementById('questionCountBadge');
+      if (badge) badge.textContent = `${HARDCODED_QUESTIONS.length} pytań w puli`;
+      const counter = document.getElementById('editorQuestionCounter');
+      if (counter) counter.textContent = HARDCODED_QUESTIONS.length;
+    }
+
+    function switchView(viewId) {
+      ['viewHome', 'viewLobby', 'viewGame', 'viewPodium'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('hidden', id !== viewId);
+      });
+      const headerBadge = document.getElementById('headerRoomBadge');
+      if (currentRoomPin && viewId !== 'viewHome') {
+        headerBadge.classList.remove('hidden');
+        headerBadge.classList.add('flex');
+        document.getElementById('headerPinValue').textContent = currentRoomPin;
+      } else {
+        headerBadge.classList.add('hidden');
+        headerBadge.classList.remove('flex');
+      }
+    }
+
+    function showToastBanner(htmlContent, borderClass = 'border-amber-400') {
+      const container = document.getElementById('combatToastContainer');
+      const toast = document.createElement('div');
+      toast.className = `bg-gray-950/95 border-2 ${borderClass} rounded-2xl px-4 py-3 shadow-2xl text-white text-sm font-semibold flex items-center gap-3 transform transition-all duration-300`;
+      toast.innerHTML = htmlContent;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 4200);
+    }
+
+    function getValidatedNickname() {
+      const input = document.getElementById('playerNameInput');
+      let name = input.value.trim();
+      if (!name) {
+        name = 'Gracz_' + Math.floor(100 + Math.random() * 899);
+        input.value = name;
+      }
+      myNickname = name;
+      return name;
+    }
+
+    async function handleCreateRoom() {
+      sfx.click();
+      const name = getValidatedNickname();
+      const pin = String(Math.floor(100000 + Math.random() * 900000));
+      currentRoomPin = pin;
+      isRoomHost = true;
+      renderedQuestionIndex = -1;
+      processedCombatIds.clear();
+
+      const streakTarget = parseInt(document.getElementById('streakTargetSelect').value, 10) || 5;
+      const questionTime = parseInt(document.getElementById('questionTimeSelect').value, 10) || 20;
+
+      const initialRoomState = {
+        pin,
+        hostId: myPlayerId,
+        status: 'lobby',
+        createdAt: Date.now(),
+        streakTarget,
+        questionTime,
+        currentQuestionIndex: 0,
+        questionStartedAt: 0,
+        questions: JSON.parse(JSON.stringify(HARDCODED_QUESTIONS)),
+        players: {
+          [myPlayerId]: {
+            id: myPlayerId,
+            name,
+            avatar: myAvatar,
+            score: 0,
+            streak: 0,
+            maxStreak: 0,
+            powersAvailable: 0,
+            powersUsed: 0,
+            lastAnswerIndex: -1,
+            lastAnswerCorrect: false,
+            lastPointsEarned: 0,
+            isBot: false,
+            isHost: true
+          }
+        },
+        combatLogs: []
+      };
+
+      subscribeToRoom(pin);
+      await saveRoomData(pin, initialRoomState);
+      switchView('viewLobby');
+    }
+
+    async function handleJoinRoom() {
+      sfx.click();
+      const pinInput = document.getElementById('joinPinInput').value.trim();
+      if (pinInput.length !== 6) {
+        showToastBanner(`<span class="text-2xl">⚠️</span><span>Wpisz poprawny, 6-cyfrowy kod PIN!</span>`, 'border-rose-400');
+        return;
+      }
+      const name = getValidatedNickname();
+      let existingRoom = await fetchRoomData(pinInput);
+
+      if (!existingRoom) {
+        showToastBanner(`<span class="text-2xl">❌</span><span>Nie znaleziono pokoju o PIN-ie <b>${pinInput}</b>. Upewnij się, że gospodarz utworzył grę!</span>`, 'border-rose-500');
+        return;
+      }
+
+      currentRoomPin = pinInput;
+      isRoomHost = existingRoom.hostId === myPlayerId;
+      renderedQuestionIndex = -1;
+      processedCombatIds.clear();
+
+      if (!existingRoom.players[myPlayerId]) {
+        existingRoom.players[myPlayerId] = {
+          id: myPlayerId,
+          name,
+          avatar: myAvatar,
+          score: 0,
+          streak: 0,
+          maxStreak: 0,
+          powersAvailable: 0,
+          powersUsed: 0,
+          lastAnswerIndex: -1,
+          lastAnswerCorrect: false,
+          lastPointsEarned: 0,
+          isBot: false,
+          isHost: false
+        };
+      } else {
+        existingRoom.players[myPlayerId].name = name;
+        existingRoom.players[myPlayerId].avatar = myAvatar;
+      }
+
+      (existingRoom.combatLogs || []).forEach((log) => processedCombatIds.add(log.id));
+
+      subscribeToRoom(pinInput);
+      await saveRoomData(pinInput, existingRoom);
+
+      if (existingRoom.status === 'lobby') switchView('viewLobby');
+      else if (existingRoom.status === 'finished') switchView('viewPodium');
+      else switchView('viewGame');
+    }
+
+    async function handleAddBot() {
+      if (!currentRoomData || !isRoomHost) return;
+      sfx.click();
+      const existingNames = Object.values(currentRoomData.players).map((p) => p.name);
+      const availableBots = BOT_PROFILES.filter((b) => !existingNames.includes(b.name));
+      const chosen = availableBots.length > 0 ? availableBots[0] : { name: 'Bot_' + Math.floor(10 + Math.random() * 89), avatar: '🤖' };
+
+      const botId = 'bot_' + Math.random().toString(36).substring(2, 9);
+      currentRoomData.players[botId] = {
+        id: botId,
+        name: chosen.name,
+        avatar: chosen.avatar,
+        score: 0,
+        streak: 0,
+        maxStreak: 0,
+        powersAvailable: 0,
+        powersUsed: 0,
+        lastAnswerIndex: -1,
+        lastAnswerCorrect: false,
+        lastPointsEarned: 0,
+        isBot: true,
+        isHost: false
+      };
+
+      await saveRoomData(currentRoomPin, currentRoomData);
+    }
+
+    function handleRoomSnapshotUpdate(room) {
+      currentRoomData = room;
+      isRoomHost = room.hostId === myPlayerId;
+
+      processIncomingCombatEvents(room.combatLogs || []);
+
+      if (room.status === 'lobby') {
+        switchView('viewLobby');
+        renderLobbyView(room);
+      } else if (room.status === 'question' || room.status === 'summary') {
+        switchView('viewGame');
+        renderGameView(room);
+      } else if (room.status === 'finished') {
+        clearQuestionTimer();
+        switchView('viewPodium');
+        renderPodiumView(room);
+      }
+    }
+
+    function renderLobbyView(room) {
+      document.getElementById('lobbyPinDisplay').textContent = room.pin;
+      const playersList = Object.values(room.players || {});
+      document.getElementById('lobbyPlayerCount').textContent = playersList.length;
+
+      document.getElementById('streakTargetSelect').value = String(room.streakTarget || 5);
+      document.getElementById('questionTimeSelect').value = String(room.questionTime || 20);
+
+      document.getElementById('hostBotControls').classList.toggle('hidden', !isRoomHost);
+      document.getElementById('startGameBtn').classList.toggle('hidden', !isRoomHost);
+
+      const grid = document.getElementById('lobbyPlayersGrid');
+      grid.innerHTML = '';
+      playersList.forEach((p) => {
+        const isMe = p.id === myPlayerId;
+        const card = document.createElement('div');
+        card.className = `rounded-2xl p-3.5 border flex items-center gap-3 transition ${isMe ? 'bg-amber-400/20 border-amber-400 shadow-lg' : 'bg-black/40 border-white/15'}`;
+        card.innerHTML = `
+          <div class="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center text-2xl shrink-0">${p.avatar}</div>
+          <div class="overflow-hidden">
+            <div class="font-bold text-sm text-white truncate flex items-center gap-1.5">
+              <span>${escapeHtml(p.name)}</span>
+              ${p.isHost ? '<i class="fa-solid fa-crown text-amber-300 text-xs"></i>' : ''}
+            </div>
+            <div class="text-[11px] text-purple-300">${isMe ? 'Ty' : p.isBot ? 'Bot' : 'Gracz'}</div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    async function startNewQuestionRound(questionIndex) {
+      if (!currentRoomData || !isRoomHost) return;
+      clearBotTimeouts();
+
+      Object.values(currentRoomData.players).forEach((p) => {
+        p.lastAnswerIndex = -1;
+        p.lastAnswerCorrect = false;
+        p.lastPointsEarned = 0;
+      });
+
+      currentRoomData.status = 'question';
+      currentRoomData.currentQuestionIndex = questionIndex;
+      currentRoomData.questionStartedAt = Date.now();
+
+      await saveRoomData(currentRoomPin, currentRoomData);
+      scheduleBotsForCurrentQuestion();
+    }
+
+    function renderGameView(room) {
+      const me = room.players[myPlayerId] || { name: 'Gracz', avatar: myAvatar, score: 0, streak: 0, powersAvailable: 0 };
+      const questions = room.questions || HARDCODED_QUESTIONS;
+      const qIdx = room.currentQuestionIndex || 0;
+      const currentQ = questions[qIdx] || questions[0];
+      const streakTarget = room.streakTarget || 5;
+
+      document.getElementById('hudMyAvatar').textContent = me.avatar;
+      document.getElementById('hudMyName').textContent = me.name;
+      document.getElementById('hudMyScore').textContent = me.score;
+      document.getElementById('hudCategoryBadge').textContent = currentQ.category || 'Quiz';
+      document.getElementById('hudQuestionIndex').textContent = qIdx + 1;
+      document.getElementById('hudQuestionTotal').textContent = questions.length;
+
+      const currentStreakMod = me.streak % streakTarget;
+      document.getElementById('hudStreakText').textContent = `${me.streak} (Cel: ${streakTarget}🔥)`;
+
+      const flamesContainer = document.getElementById('hudFlameIcons');
+      flamesContainer.innerHTML = '';
+      for (let i = 0; i < streakTarget; i++) {
+        const isLit = i < (me.streak > 0 && currentStreakMod === 0 ? streakTarget : currentStreakMod);
+        const span = document.createElement('span');
+        span.className = `text-lg sm:text-xl transition ${isLit ? 'flame-active opacity-100' : 'opacity-25 grayscale'}`;
+        span.textContent = '🔥';
+        flamesContainer.appendChild(span);
+      }
+
+      const powerBtn = document.getElementById('openPowerModalBtn');
+      const roundPowerBtn = document.getElementById('roundSummaryPowerBtn');
+      document.getElementById('hudPowerCount').textContent = me.powersAvailable || 0;
+
+      if ((me.powersAvailable || 0) > 0) {
+        powerBtn.disabled = false;
+        powerBtn.classList.add('power-ready-glow');
+        if (room.status === 'summary') roundPowerBtn.classList.remove('hidden');
+        else roundPowerBtn.classList.add('hidden');
+      } else {
+        powerBtn.disabled = true;
+        powerBtn.classList.remove('power-ready-glow');
+        roundPowerBtn.classList.add('hidden');
+      }
+
+      const allPlayers = Object.values(room.players || {});
+      const answeredCount = allPlayers.filter((p) => p.lastAnswerIndex !== -1).length;
+      document.getElementById('hudAnsweredCounter').textContent = `${answeredCount} / ${allPlayers.length}`;
+
+      if (room.status === 'question' && renderedQuestionIndex !== qIdx) {
+        renderedQuestionIndex = qIdx;
+        setupQuestionUI(currentQ);
+        startClientQuestionTimer(room);
+      }
+
+      const ansButtons = document.querySelectorAll('#answerButtonsGrid .ans-card');
+      if (room.status === 'question') {
+        document.getElementById('roundSummaryPanel').classList.add('hidden');
+        ansButtons.forEach((btn, idx) => {
+          btn.disabled = me.lastAnswerIndex !== -1;
+          btn.classList.remove('ring-4', 'ring-white', 'opacity-35', 'scale-95');
+          if (me.lastAnswerIndex !== -1) {
+            if (idx === me.lastAnswerIndex) btn.classList.add('ring-4', 'ring-white');
+            else btn.classList.add('opacity-35', 'scale-95');
+          }
+        });
+
+        const banner = document.getElementById('postAnswerBanner');
+        if (me.lastAnswerIndex !== -1) {
+          banner.classList.remove('hidden');
+          const textEl = document.getElementById('postAnswerText');
+          if (me.lastAnswerCorrect) textEl.innerHTML = `<span class="text-emerald-400">✅ Poprawnie! +${me.lastPointsEarned} pkt</span>`;
+          else textEl.innerHTML = `<span class="text-rose-400">❌ Błędna odpowiedź! Passa wyzerowana.</span>`;
+        } else {
+          banner.classList.add('hidden');
+        }
+
+        if (isRoomHost && answeredCount >= allPlayers.length) triggerRoundSummary();
+      } else if (room.status === 'summary') {
+        clearQuestionTimer();
+        document.getElementById('postAnswerBanner').classList.add('hidden');
+        ansButtons.forEach((btn, idx) => {
+          btn.disabled = true;
+          btn.classList.remove('opacity-35', 'ring-4', 'ring-white', 'ring-emerald-300');
+          if (idx === currentQ.correct) btn.classList.add('ring-4', 'ring-emerald-300');
+          else btn.classList.add('opacity-35');
+        });
+        renderRoundSummaryPanel(room, currentQ);
+      }
+    }
+
+    function setupQuestionUI(currentQ) {
+      document.getElementById('questionTextDisplay').textContent = currentQ.question;
+      const ansButtons = document.querySelectorAll('#answerButtonsGrid .ans-card');
+      ansButtons.forEach((btn, idx) => {
+        btn.querySelector('.ans-text').textContent = currentQ.options[idx] || '';
+      });
+    }
+
+    function startClientQuestionTimer(room) {
+      clearQuestionTimer();
+      const totalSec = room.questionTime || 20;
+      const timerBar = document.getElementById('questionTimerBar');
+      const timerSecEl = document.getElementById('questionTimerSeconds');
+
+      questionInterval = setInterval(() => {
+        if (!currentRoomData || currentRoomData.status !== 'question') { clearQuestionTimer(); return; }
+        const elapsed = (Date.now() - (currentRoomData.questionStartedAt || Date.now())) / 1000;
+        const remaining = Math.max(0, totalSec - elapsed);
+        const pct = Math.max(0, (remaining / totalSec) * 100);
+
+        timerBar.style.width = `${pct}%`;
+        const ceilSec = Math.ceil(remaining);
+        if (timerSecEl.textContent !== String(ceilSec)) {
+          timerSecEl.textContent = String(ceilSec);
+          if (ceilSec <= 5 && ceilSec > 0) sfx.tick();
+        }
+
+        if (remaining <= 0) {
+          clearQuestionTimer();
+          if (isRoomHost) triggerRoundSummary();
+        }
+      }, 100);
+    }
+
+    function clearQuestionTimer() {
+      if (questionInterval) { clearInterval(questionInterval); questionInterval = null; }
+    }
+
+    async function submitPlayerAnswer(answerIdx) {
+      if (!currentRoomData || currentRoomData.status !== 'question') return;
+      const me = currentRoomData.players[myPlayerId];
+      if (!me || me.lastAnswerIndex !== -1) return;
+
+      const currentQ = (currentRoomData.questions || HARDCODED_QUESTIONS)[currentRoomData.currentQuestionIndex || 0];
+      const isCorrect = answerIdx === currentQ.correct;
+      const totalSec = currentRoomData.questionTime || 20;
+      const elapsedSec = Math.max(0, (Date.now() - currentRoomData.questionStartedAt) / 1000);
+      const speedRatio = Math.max(0, Math.min(1, 1 - elapsedSec / totalSec));
+      const streakTarget = currentRoomData.streakTarget || 5;
+
+      if (isCorrect) {
+        sfx.correct();
+        me.streak = (me.streak || 0) + 1;
+        if (me.streak > (me.maxStreak || 0)) me.maxStreak = me.streak;
+        const pointsEarned = Math.round(500 + 500 * speedRatio + Math.min(250, me.streak * 30));
+        me.score = (me.score || 0) + pointsEarned;
+        me.lastPointsEarned = pointsEarned;
+        me.lastAnswerCorrect = true;
+
+        if (me.streak > 0 && me.streak % streakTarget === 0) {
+          me.powersAvailable = (me.powersAvailable || 0) + 1;
+          sfx.powerUnlocked();
+          showToastBanner(`<span class="text-3xl">🔥</span><div><div class="font-bold text-amber-300">PASSA ${me.streak}!</div><div class="text-xs">Masz gotowego Powera!</div></div>`, 'border-amber-400');
+        }
+      } else {
+        sfx.wrong();
+        me.streak = 0;
+        me.lastPointsEarned = 0;
+        me.lastAnswerCorrect = false;
+      }
+
+      me.lastAnswerIndex = answerIdx;
+      await saveRoomData(currentRoomPin, currentRoomData);
+    }
+
+    async function triggerRoundSummary() {
+      if (!currentRoomData || currentRoomData.status === 'summary') return;
+      clearQuestionTimer();
+      clearBotTimeouts();
+
+      Object.values(currentRoomData.players || {}).forEach((p) => {
+        if (p.lastAnswerIndex === -1) { p.streak = 0; p.lastAnswerCorrect = false; p.lastPointsEarned = 0; }
+      });
+
+      currentRoomData.status = 'summary';
+      await saveRoomData(currentRoomPin, currentRoomData);
+    }
+
+    function renderRoundSummaryPanel(room, currentQ) {
+      const panel = document.getElementById('roundSummaryPanel');
+      panel.classList.remove('hidden');
+      document.getElementById('roundCorrectAnswerLabel').textContent = `Poprawna odpowiedź: ${currentQ.options[currentQ.correct]}`;
+
+      const nextBtn = document.getElementById('nextQuestionHostBtn');
+      if (isRoomHost) {
+        nextBtn.classList.remove('hidden');
+        const isLast = (room.currentQuestionIndex || 0) >= (room.questions.length - 1);
+        nextBtn.innerHTML = isLast ? `<span>ZOBACZ PODIUM</span><i class="fa-solid fa-trophy ml-2"></i>` : `<span>NASTĘPNE PYTANIE</span><i class="fa-solid fa-forward-step ml-2"></i>`;
+      } else {
+        nextBtn.classList.add('hidden');
+      }
+
+      const sorted = Object.values(room.players || {}).sort((a, b) => b.score - a.score);
+      const listEl = document.getElementById('roundLeaderboardList');
+      listEl.innerHTML = '';
+
+      sorted.forEach((p, idx) => {
+        const isMe = p.id === myPlayerId;
+        const row = document.createElement('div');
+        row.className = `flex items-center justify-between px-4 py-2.5 rounded-2xl border ${isMe ? 'bg-amber-400/20 border-amber-400' : 'bg-black/40 border-white/10'}`;
+        row.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="font-display font-bold text-lg w-7 text-center">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '#' + (idx + 1)}</span>
+            <span class="text-2xl">${p.avatar}</span>
+            <div>
+              <div class="font-bold text-sm text-white">${escapeHtml(p.name)} ${isMe ? '(Ty)' : ''}</div>
+              <div class="text-xs ${p.lastAnswerCorrect ? 'text-emerald-400' : 'text-rose-400'}">${p.lastAnswerCorrect ? '+' + p.lastPointsEarned + ' pkt' : 'Brak punktów'}</div>
+            </div>
+          </div>
+          <div class="font-display text-xl font-bold text-white">${p.score} pkt</div>
+        `;
+        listEl.appendChild(row);
+      });
+    }
+
+    function clearBotTimeouts() {
+      botSimulationTimeouts.forEach((t) => clearTimeout(t));
+      botSimulationTimeouts = [];
+    }
+
+    function scheduleBotsForCurrentQuestion() {
+      if (!currentRoomData || !isRoomHost) return;
+      const bots = Object.values(currentRoomData.players || {}).filter((p) => p.isBot);
+      const currentQ = (currentRoomData.questions || HARDCODED_QUESTIONS)[currentRoomData.currentQuestionIndex || 0];
+
+      bots.forEach((bot) => {
+        const tId = setTimeout(async () => {
+          if (!currentRoomData || currentRoomData.status !== 'question') return;
+          const b = currentRoomData.players[bot.id];
+          if (!b || b.lastAnswerIndex !== -1) return;
+
+          b.lastAnswerIndex = currentQ.correct;
+          b.streak = (b.streak || 0) + 1;
+          b.score = (b.score || 0) + 800;
+          b.lastAnswerCorrect = true;
+          b.lastPointsEarned = 800;
+          await saveRoomData(currentRoomPin, currentRoomData);
+        }, 3000 + Math.random() * 4000);
+        botSimulationTimeouts.push(tId);
+      });
+    }
+
+    function openPowerCombatModal() {
+      if (!currentRoomData) return;
+      const me = currentRoomData.players[myPlayerId];
+      if (!me || (me.powersAvailable || 0) <= 0) return;
+      sfx.click();
+      document.getElementById('powerCombatModal').classList.remove('hidden');
+      document.getElementById('powerCombatModal').classList.add('flex');
+      renderPowerModalTargets();
+    }
+
+    function closePowerCombatModal() {
+      document.getElementById('powerCombatModal').classList.add('hidden');
+      document.getElementById('powerCombatModal').classList.remove('flex');
+    }
+
+    function renderPowerModalTargets() {
+      if (!currentRoomData) return;
+      const powerDef = POWER_DEFINITIONS[selectedPowerKey];
+      const targetSection = document.getElementById('targetSelectionSection');
+
+      document.querySelectorAll('.power-choice-btn').forEach((btn) => {
+        const key = btn.getAttribute('data-power');
+        btn.className = `power-choice-btn text-left p-3.5 rounded-2xl border-2 ${key === selectedPowerKey ? 'border-amber-400 bg-amber-400/20' : 'border-white/15 bg-black/30'} transition flex items-start gap-3`;
+      });
+
+      if (!powerDef.needsTarget) {
+        targetSection.classList.add('hidden');
+        selectedTargetPlayerId = myPlayerId;
+        return;
+      }
+
+      targetSection.classList.remove('hidden');
+      const opponents = Object.values(currentRoomData.players || {}).filter((p) => p.id !== myPlayerId);
+      const listEl = document.getElementById('powerTargetPlayersList');
+      listEl.innerHTML = '';
+
+      if (opponents.length === 0) {
+        listEl.innerHTML = `<div class="col-span-2 text-xs text-purple-200">Brak rywali w pokoju.</div>`;
+        return;
+      }
+      if (!selectedTargetPlayerId) selectedTargetPlayerId = opponents[0].id;
+
+      opponents.forEach((opp) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `p-3 rounded-2xl border-2 text-left flex items-center justify-between ${opp.id === selectedTargetPlayerId ? 'border-rose-400 bg-rose-500/25' : 'border-white/10 bg-black/40'}`;
+        btn.innerHTML = `<span class="font-bold text-white">${opp.avatar} ${escapeHtml(opp.name)} (${opp.score} pkt)</span>`;
+        btn.onclick = () => { selectedTargetPlayerId = opp.id; renderPowerModalTargets(); };
+        listEl.appendChild(btn);
+      });
+    }
+
+    async function applyPowerEffectInRoom(attackerId, targetId, powerKey) {
+      if (!currentRoomData) return;
+      const attacker = currentRoomData.players[attackerId];
+      if (!attacker || (attacker.powersAvailable || 0) <= 0) return;
+
+      const target = targetId ? currentRoomData.players[targetId] : attacker;
+      attacker.powersAvailable -= 1;
+      attacker.powersUsed = (attacker.powersUsed || 0) + 1;
+
+      if (powerKey === 'sabotage' && target) target.score = Math.max(0, target.score - 400);
+      else if (powerKey === 'vampire' && target) { target.score = Math.max(0, target.score - 250); attacker.score += 250; }
+      else if (powerKey === 'freeze' && target) { target.score = Math.max(0, target.score - 200); target.streak = 0; }
+      else attacker.score += 350;
+
+      await saveRoomData(currentRoomPin, currentRoomData);
+    }
+
+    function processIncomingCombatEvents(combatLogs) {}
+
+    function renderPodiumView(room) {
+      sfx.fanfare();
+      const sorted = Object.values(room.players || {}).sort((a, b) => b.score - a.score);
+      const podiumStage = document.getElementById('podiumStage');
+      podiumStage.innerHTML = '';
+
+      const places = [
+        { player: sorted[1], rank: 2, height: 'h-36', medal: '🥈' },
+        { player: sorted[0], rank: 1, height: 'h-48', medal: '👑' },
+        { player: sorted[2], rank: 3, height: 'h-28', medal: '🥉' }
+      ];
+
+      places.forEach((slot) => {
+        const col = document.createElement('div');
+        col.className = 'flex flex-col items-center';
+        if (slot.player) {
+          col.innerHTML = `
+            <div class="text-3xl mb-1">${slot.medal}</div>
+            <div class="w-14 h-14 rounded-2xl bg-purple-900 border-2 border-white/30 flex items-center justify-center text-3xl mb-2">${slot.player.avatar}</div>
+            <div class="font-bold text-sm text-white">${escapeHtml(slot.player.name)}</div>
+            <div class="text-amber-300 text-xs mb-3">${slot.player.score} pkt</div>
+            <div class="w-full ${slot.height} rounded-t-3xl bg-gradient-to-b from-amber-300 to-amber-600 flex items-center justify-center font-bold text-3xl text-gray-950">${slot.rank}</div>
+          `;
+        }
+        podiumStage.appendChild(col);
+      });
+
+      const listEl = document.getElementById('finalScoreboardList');
+      listEl.innerHTML = '';
+      sorted.forEach((p, idx) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between bg-white/5 px-4 py-2.5 rounded-xl border border-white/10';
+        div.innerHTML = `<span>#${idx + 1} ${p.avatar} ${escapeHtml(p.name)}</span><span class="font-bold">${p.score} pkt</span>`;
+        listEl.appendChild(div);
+      });
+
+      document.getElementById('playAgainHostBtn').classList.toggle('hidden', !isRoomHost);
+    }
+
+    function renderVisualQuestionsEditor() {
+      const container = document.getElementById('visualQuestionsContainer');
+      container.innerHTML = '';
+      updateQuestionCountBadge();
+
+      HARDCODED_QUESTIONS.forEach((q, qIdx) => {
+        const card = document.createElement('div');
+        card.className = 'bg-black/40 border border-white/15 rounded-2xl p-4 space-y-3';
+        card.innerHTML = `
+          <input type="text" data-qidx="${qIdx}" data-field="question" value="${escapeHtml(q.question)}" class="w-full bg-black/50 border border-purple-400/30 rounded-xl px-3.5 py-2 text-sm font-bold text-white" />
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            ${q.options.map((opt, oIdx) => `
+              <div class="flex items-center gap-2 bg-white/5 p-2 rounded-xl border ${q.correct === oIdx ? 'border-emerald-400' : 'border-white/10'}">
+                <input type="radio" name="correct_q_${qIdx}" data-qidx="${qIdx}" data-correct="${oIdx}" ${q.correct === oIdx ? 'checked' : ''} />
+                <input type="text" data-qidx="${qIdx}" data-optidx="${oIdx}" value="${escapeHtml(opt)}" class="flex-1 bg-transparent text-xs text-white focus:outline-none" />
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function syncJsonTextarea() {
+      document.getElementById('jsonQuestionsTextarea').value = JSON.stringify(HARDCODED_QUESTIONS, null, 2);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      renderAvatarPicker();
+      updateQuestionCountBadge();
+      await initFirebaseService();
+
+      document.getElementById('createRoomBtn').onclick = handleCreateRoom;
+      document.getElementById('joinRoomBtn').onclick = handleJoinRoom;
+      document.getElementById('addBotBtn').onclick = handleAddBot;
+      document.getElementById('startGameBtn').onclick = () => { if (isRoomHost) startNewQuestionRound(0); };
+
+      document.querySelectorAll('#answerButtonsGrid .ans-card').forEach((btn) => {
+        btn.onclick = () => submitPlayerAnswer(parseInt(btn.getAttribute('data-index'), 10));
+      });
+
+      document.getElementById('nextQuestionHostBtn').onclick = async () => {
+        if (!isRoomHost) return;
+        const nextIdx = (currentRoomData.currentQuestionIndex || 0) + 1;
+        if (nextIdx >= currentRoomData.questions.length) {
+          currentRoomData.status = 'finished';
+          await saveRoomData(currentRoomPin, currentRoomData);
+        } else {
+          await startNewQuestionRound(nextIdx);
+        }
+      };
+
+      document.getElementById('openPowerModalBtn').onclick = openPowerCombatModal;
+      document.getElementById('roundSummaryPowerBtn').onclick = openPowerCombatModal;
+      document.getElementById('closePowerModalBtn').onclick = closePowerCombatModal;
+      document.getElementById('executePowerAttackBtn').onclick = async () => {
+        closePowerCombatModal();
+        await applyPowerEffectInRoom(myPlayerId, selectedTargetPlayerId, selectedPowerKey);
+      };
+
+      const editorModal = document.getElementById('editorModal');
+      document.getElementById('openEditorModalBtn').onclick = () => {
+        renderVisualQuestionsEditor();
+        syncJsonTextarea();
+        editorModal.classList.remove('hidden');
+        editorModal.classList.add('flex');
+      };
+      document.getElementById('closeEditorModalBtn').onclick = () => editorModal.classList.add('hidden');
+
+      document.getElementById('saveQuestionsInSessionBtn').onclick = async () => {
+        updateQuestionCountBadge();
+        editorModal.classList.add('hidden');
+        showToastBanner(`<span class="text-xl">✅</span><span>Zaktualizowano pytania!</span>`, 'border-emerald-400');
+      };
+    });
+  </script>
+</body>
+</html>
